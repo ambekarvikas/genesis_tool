@@ -5,6 +5,8 @@ import math
 import pathlib
 from functools import lru_cache
 
+from services.confidence import calculate_confidence, get_priority as _priority_label
+
 _CONFIG_PATH = pathlib.Path(__file__).parent.parent / "config" / "system_definitions.json"
 _PRIORITY_RANK = {"Critical": 0, "High": 1, "Moderate": 2, "Low": 3}
 
@@ -18,13 +20,7 @@ def _load_system_defs() -> dict:
 
 
 def _confidence(n_genes: int | float | None, median_fc: float | None = None) -> str:
-    genes = int(n_genes or 0)
-    fc = abs(float(median_fc)) if median_fc is not None else 0.0
-    if genes >= 15 and fc > 0.5:
-        return "High"
-    if genes >= 8:
-        return "Medium"
-    return "Low"
+    return calculate_confidence(n_genes, median_fc)
 
 
 def _health_score(raw_score: float, high_is_worse: bool) -> float:

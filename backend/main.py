@@ -298,7 +298,10 @@ async def analyze(
 
     normalized_df = _normalize_input_df(df)
     base_scores   = calculate_scores(normalized_df.rename(columns={"expression_value": "log2FC"}))
-    pathway       = generate_pathway(normalized_df)
+    try:
+        pathway = generate_pathway(normalized_df)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
     pathway_rows  = pathway.get("scores", [])
 
     enrich_pathways(pathway_rows)
@@ -343,12 +346,9 @@ async def analyze(
         "pathways":      pathway_rows,
         "pathway_genes": pathway.get("gene_details", {}),
         "pathway": {
-            "status":            pathway.get("status"),
-            "runner":            pathway.get("runner"),
-            "output_file":       pathway.get("output_file"),
-            "genes_output_file": pathway.get("genes_output_file"),
-            "categories":        categories,
-            "scores":            pathway_rows,
+            "status":   pathway.get("status"),
+            "runner":   pathway.get("runner"),
+            "categories": categories,
         },
         "scores": {
             "source_column": base_scores.get("source_column"),

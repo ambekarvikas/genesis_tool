@@ -121,9 +121,7 @@ type AnalyzeResult = {
   pathway: {
     status: string;
     runner?: string;
-    genes_output_file?: string;
     categories?: CategoryGroup[];
-    scores?: PathwayRow[];
   };
   scores?: {
     source_column?: string;

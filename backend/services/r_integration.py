@@ -108,9 +108,6 @@ def generate_pathway(df: pd.DataFrame):
     if rscript_path is None:
         return {
             "status": "skipped",
-            "code": -1,
-            "stdout": "",
-            "stderr": "Rscript not found. Install R and ensure Rscript is in PATH.",
             "scores": [],
         }
 
@@ -123,27 +120,28 @@ def generate_pathway(df: pd.DataFrame):
             capture_output=True,
             text=True,
             check=False,
+            timeout=120,
             cwd=str(workspace_root),
         )
+
+        if result.returncode != 0:
+            raise RuntimeError(
+                f"R script exited with code {result.returncode}. "
+                f"stderr: {result.stderr.strip()[:500]}"
+            )
 
         pathway_scores = _read_pathway_scores(output_file)
         pathway_gene_details = _read_pathway_gene_details(genes_output_file)
         return {
-            "status": "ok" if result.returncode == 0 else "error",
-            "code": result.returncode,
-            "stdout": result.stdout.strip(),
-            "stderr": result.stderr.strip(),
+            "status": "ok",
             "runner": rscript_path,
-            "output_file": str(output_file),
-            "genes_output_file": str(genes_output_file),
             "scores": pathway_scores,
             "gene_details": pathway_gene_details,
         }
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError("R script timed out after 120 seconds.") from exc
     except FileNotFoundError:
         return {
             "status": "skipped",
-            "code": -1,
-            "stdout": "",
-            "stderr": "Rscript not found. Install R and ensure Rscript is in PATH.",
             "scores": [],
         }
