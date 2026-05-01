@@ -6,8 +6,10 @@ import pathlib
 from functools import lru_cache
 
 from services.confidence import calculate_confidence, get_priority as _priority_label
+from services.outcome_engine import predict_outcome
 
 _CONFIG_PATH = pathlib.Path(__file__).parent.parent / "config" / "system_definitions.json"
+_ACTIONS_PATH = pathlib.Path(__file__).parent.parent / "config" / "system_actions.json"
 _PRIORITY_RANK = {"Critical": 0, "High": 1, "Moderate": 2, "Low": 3}
 
 
@@ -17,6 +19,27 @@ def _load_system_defs() -> dict:
         return {}
     with _CONFIG_PATH.open(encoding="utf-8-sig") as handle:
         return json.load(handle)
+
+
+@lru_cache(maxsize=1)
+def _load_system_actions() -> dict:
+    if not _ACTIONS_PATH.exists():
+        return {}
+    with _ACTIONS_PATH.open(encoding="utf-8-sig") as handle:
+        return json.load(handle)
+
+
+def _get_actions(system: str, priority: str, band_actions: dict | list) -> dict:
+    """Return priority-specific actions from system_actions.json, falling back to band actions."""
+    actions_config = _load_system_actions()
+    system_actions = actions_config.get(system, {})
+    priority_actions = system_actions.get(priority)
+    if priority_actions and isinstance(priority_actions, dict):
+        return priority_actions
+    # Fall back to band definition actions
+    if isinstance(band_actions, dict):
+        return band_actions
+    return {"lifestyle": [], "nutrition": [], "clinical": []}
 
 
 def _confidence(n_genes: int | float | None, median_fc: float | None = None) -> str:
@@ -93,32 +116,35 @@ def build_clinical_summary(pathway_rows: list[dict], system_scores: dict[str, in
         weight = float(definition.get("system_weight", 1.0))
         n_genes_factor = math.log(float(reason.get("n_genes") or 0) + 1)
         priority_score = round((100 - health) * weight * max(n_genes_factor, 0.5), 2)
+        band_priority = band.get("priority", "Moderate")
+        actions = _get_actions(system, band_priority, band.get("actions", {}))
+        outcome = predict_outcome(system, float(raw_score))
 
         summary.append(
             {
                 "system": system,
                 "label": definition.get("label", f"{system} System"),
                 "score": round(float(raw_score)),
-                "priority": band.get("priority", "Moderate"),
+                "priority": band_priority,
                 "priority_score": priority_score,
                 "issue": band.get("issue", f"{system} requires clinical attention"),
-                "impact": band.get("issue", f"{system} requires clinical attention"),
-                "symptoms": band.get("symptoms", definition.get("default_symptoms", [])),
-                "actions": band.get("actions", {"lifestyle": [], "nutrition": [], "clinical": []}),
                 "impact": band.get("impact", ""),
+                "symptoms": band.get("symptoms", definition.get("default_symptoms", [])),
+                "actions": actions,
                 "expected_outcome": band.get("expected_outcome", ""),
+                "outcome_prediction": outcome,
                 "confidence": confidence,
-                "reason": reason,
-                "trend": _trend_status(health, band.get("priority", "Moderate"), int(reason.get("n_genes") or 0)),
+                "reason": {**reason, "score": round(float(raw_score))},
+                "trend": _trend_status(health, band_priority, int(reason.get("n_genes") or 0)),
                 "high_is_worse": high_is_worse,
                 "goal": definition.get("focus_goal", f"Improve {system} function"),
-                "severity": band.get("priority", "Moderate"),
+                "severity": band_priority,
                 "urgency": {
                     "Critical": "Immediate",
                     "High": "High",
                     "Moderate": "Medium",
                     "Low": "Low",
-                }.get(band.get("priority", "Moderate"), "Medium"),
+                }.get(band_priority, "Medium"),
             }
         )
 

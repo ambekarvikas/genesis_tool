@@ -49,6 +49,7 @@ type Insight = {
   recommended_actions?: string[];
   actions_structured?: { lifestyle?: string[]; nutrition?: string[]; clinical?: string[] };
   trend?: { status: string; interpretation: string };
+  outcome_prediction?: { expected_change: string; timeline: string; observable_signs: string[]; note: string };
   pathway?: string;
   n_genes?: number;
   system: string;
@@ -102,6 +103,12 @@ type AnalyzeResult = {
     symptoms?: string[];
     actions?: { lifestyle?: string[]; nutrition?: string[]; clinical?: string[] } | string[];
     expected_outcome?: string;
+    outcome_prediction?: {
+      expected_change: string;
+      timeline: string;
+      observable_signs: string[];
+      note: string;
+    };
     confidence?: string;
     reason?: {
       n_genes?: number;
@@ -116,6 +123,8 @@ type AnalyzeResult = {
   top_issues: Insight[];
   insights: Insight[];
   focus_areas?: FocusArea[];
+  decision?: Array<{ system: string; score: number; priority: string; priority_score: number; rank: number }>;
+  trends?: Record<string, { status: string; interpretation: string; delta: number | null }>;
   pathways: PathwayRow[];
   pathway_genes?: Record<string, PathwayGeneRow[]>;
   pathway: {
@@ -511,6 +520,12 @@ export default function Home() {
         const trendHtml = issue.trend?.interpretation
           ? `<div style="margin-top:4px;color:#64748b;font-style:italic;font-size:12px;">${escapeHtml(issue.trend.interpretation)}</div>`
           : "";
+        const outcomePredHtml = issue.outcome_prediction
+          ? `<div style="margin-top:8px;padding:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;">
+              <strong style="color:#15803d;">Expected Improvement:</strong>
+              ${escapeHtml(issue.outcome_prediction.expected_change)} in ${escapeHtml(issue.outcome_prediction.timeline)}<br/>
+              ${issue.outcome_prediction.note ? `<em>${escapeHtml(issue.outcome_prediction.note)}</em>` : ""}
+            </div>` : "";
         return `
           <div style="margin-bottom:14px;padding:10px;border:1px solid #e2e8f0;border-radius:8px;">
             <div><strong>#${issue.rank ?? index + 1} ${(issue.severity ?? issue.priority).toUpperCase()}</strong> - ${escapeHtml(issue.clinical_label ?? issue.issue)}</div>
@@ -519,6 +534,7 @@ export default function Home() {
             <div style="margin-top:4px;"><strong>Urgency:</strong> ${escapeHtml(issue.urgency ?? "Medium")} | <strong>Confidence:</strong> ${escapeHtml(issue.confidence ?? "Medium")} | <strong>Score:</strong> ${issue.score}</div>
             ${trendHtml}
             ${outcomeHtml}
+            ${outcomePredHtml}
             ${actionsHtml}
           </div>`;
       })
@@ -875,10 +891,37 @@ export default function Home() {
                   <div style={{ fontSize: 12, color: "#64748b" }}>
                     Urgency: <strong>{item.urgency ?? "Medium"}</strong> · Confidence: <strong>{item.confidence ?? "Medium"}</strong> · Score: <strong>{item.score}</strong>
                   </div>
+                  {item.outcome_prediction && (
+                    <div style={{ marginTop: 8, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 6, padding: "8px 10px", fontSize: 13 }}>
+                      <div style={{ fontWeight: 700, color: "#15803d", marginBottom: 4 }}>Expected Improvement</div>
+                      <div><strong>Score change:</strong> {item.outcome_prediction.expected_change} · <strong>Timeline:</strong> {item.outcome_prediction.timeline}</div>
+                      {item.outcome_prediction.observable_signs.length > 0 && (
+                        <div style={{ marginTop: 4 }}><strong>Signs to watch:</strong> {item.outcome_prediction.observable_signs.join(" · ")}</div>
+                      )}
+                      {item.outcome_prediction.note && (
+                        <div style={{ marginTop: 4, color: "#475569", fontStyle: "italic" }}>{item.outcome_prediction.note}</div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           </div>
+
+          {result.trends && Object.keys(result.trends).length > 0 && (
+            <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10, padding: "16px 18px" }}>
+              <h2 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>System Trend Interpretation</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, fontSize: 13 }}>
+                {Object.entries(result.trends).map(([system, trend]) => (
+                  <div key={system} style={{ background: "#fff", border: "1px solid #fde68a", borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ fontWeight: 700, marginBottom: 3 }}>{system}</div>
+                    <div style={{ color: "#78350f", fontWeight: 600, marginBottom: 3 }}>{trend.status}</div>
+                    <div style={{ color: "#475569", fontSize: 12 }}>{trend.interpretation}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "16px 18px" }}>
             <h2 style={{ marginTop: 0, marginBottom: 10, fontSize: 16 }}>Focus Areas (Next 30 Days)</h2>

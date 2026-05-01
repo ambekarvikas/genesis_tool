@@ -1,0 +1,112 @@
+﻿{
+  "Energy": {
+    "Critical": {
+      "lifestyle": ["Sleep 8+ hours — non-negotiable", "Eliminate all high-intensity training until score >50", "Remove late-night screen use"],
+      "nutrition": ["CoQ10 200mg/day", "B-complex with methylated B12", "Eliminate refined sugar and ultra-processed carbs"],
+      "clinical":  ["Ferritin, B12, thyroid panel", "Cortisol AM/PM rhythm test", "Mitochondrial function assessment if available"]
+    },
+    "High": {
+      "lifestyle": ["Post-meal 10-minute walks", "Sleep consistency — fixed wake time", "Reduce training intensity by 30%"],
+      "nutrition": ["CoQ10 100mg/day", "Reduce processed carbohydrate load", "Increase protein to 1.4g/kg/day"],
+      "clinical":  ["Check iron status and ferritin", "Review thyroid function"]
+    },
+    "Moderate": {
+      "lifestyle": ["Strength training 3x/week", "Avoid eating <2h before sleep"],
+      "nutrition": ["Hydration 2L/day", "Complex carbohydrates around activity windows"],
+      "clinical":  []
+    },
+    "Low": {
+      "lifestyle": ["Maintain current movement and sleep pattern"],
+      "nutrition": ["Maintain current nutritional baseline"],
+      "clinical":  []
+    }
+  },
+  "Inflammation": {
+    "Critical": {
+      "lifestyle": ["Sleep 8+ hours with blackout conditions", "Eliminate all high-load training short-term", "Daily cold exposure or contrast therapy if tolerated"],
+      "nutrition": ["Omega-3 EPA+DHA 3-4g/day", "Eliminate seed oils and ultra-processed foods", "Anti-inflammatory food pattern — colorful veg, low refined carbs"],
+      "clinical":  ["CRP, IL-6, ESR inflammatory panel", "Gut permeability assessment", "Review any ongoing medication interactions"]
+    },
+    "High": {
+      "lifestyle": ["Consistent sleep schedule", "Reduce alcohol to zero short-term"],
+      "nutrition": ["Omega-3 2g/day", "Increase colorful vegetables to 5+ servings/day", "Reduce seed-oil heavy meals"],
+      "clinical":  ["CRP monitoring every 4 weeks"]
+    },
+    "Moderate": {
+      "lifestyle": ["Track stress and sleep debt weekly", "Continue regular movement routine"],
+      "nutrition": ["Maintain anti-inflammatory dietary baseline", "Increase dietary fiber to 30g/day"],
+      "clinical":  []
+    },
+    "Low": {
+      "lifestyle": ["Maintain current anti-inflammatory routine"],
+      "nutrition": ["Maintain current dietary pattern"],
+      "clinical":  []
+    }
+  },
+  "Detox": {
+    "Critical": {
+      "lifestyle": ["Remove alcohol and toxin-heavy personal care products immediately", "Sauna 2-3x/week if cardiovascular health allows", "Prioritize 8h sleep for liver clearance window"],
+      "nutrition": ["NAC 600-1200mg/day", "Cruciferous vegetables daily", "Hydration 2.5L/day minimum", "Milk thistle 150mg/day"],
+      "clinical":  ["Liver function panel: ALT, AST, GGT", "Glutathione or oxidative stress panel", "Heavy metal screen if indicated"]
+    },
+    "High": {
+      "lifestyle": ["Review environmental toxin exposure at home/work", "Prioritize early sleep for overnight liver detox window"],
+      "nutrition": ["Sulfur-rich foods (eggs, garlic, onion, cruciferous)", "Consider NAC 600mg/day", "Hydration 2L/day"],
+      "clinical":  ["Liver enzyme check: ALT/AST"]
+    },
+    "Moderate": {
+      "lifestyle": ["Maintain hydration and fiber intake"],
+      "nutrition": ["Antioxidant-rich diet", "Brassica vegetables 3x/week"],
+      "clinical":  []
+    },
+    "Low": {
+      "lifestyle": ["Maintain current detox-supportive habits"],
+      "nutrition": ["Maintain dietary support"],
+      "clinical":  []
+    }
+  },
+  "Brain": {
+    "Critical": {
+      "lifestyle": ["Fixed wake/sleep schedule — variance <30 min", "Stress load reduction: remove one major stressor", "Limit caffeine to morning only, no screens <1h before bed"],
+      "nutrition": ["Omega-3 DHA 1-2g/day", "Increase tryptophan and tyrosine food sources (turkey, eggs, legumes)", "Magnesium glycinate 200-400mg before bed"],
+      "clinical":  ["Homocysteine and B-vitamin status including folate", "Neurotransmitter metabolite panel (if available)", "Rule out sleep apnea if fatigue + brain fog coexist"]
+    },
+    "High": {
+      "lifestyle": ["7-8 hours sleep consistently", "Daily stress regulation practice (10-minute minimum)"],
+      "nutrition": ["Protein timing — include protein at each meal for neurotransmitter precursors", "Reduce late caffeine"],
+      "clinical":  ["B12 and folate check"]
+    },
+    "Moderate": {
+      "lifestyle": ["Aerobic activity 3x/week for BDNF support", "Maintain sleep hygiene"],
+      "nutrition": ["Maintain protein and healthy fat baseline"],
+      "clinical":  []
+    },
+    "Low": {
+      "lifestyle": ["Maintain current routine"],
+      "nutrition": ["Maintain brain-supportive nutritional baseline"],
+      "clinical":  []
+    }
+  },
+  "Recovery": {
+    "Critical": {
+      "lifestyle": ["Reduce training volume 50% immediately", "Sleep 8+ hours — this is the primary recovery driver", "No consecutive high-load training days"],
+      "nutrition": ["Protein 1.8-2.0g/kg/day", "Zinc 15-25mg/day", "Magnesium glycinate 300mg/day", "Vitamin D3 2000-4000IU if deficient"],
+      "clinical":  ["IGF-1 and cortisol/testosterone ratio", "Vitamin D, zinc, magnesium levels", "Sleep architecture review if persistent fatigue"]
+    },
+    "High": {
+      "lifestyle": ["Post-training recovery protocol — 20min downregulation", "Sleep regularization — consistent bed time"],
+      "nutrition": ["Post-training protein within 30 minutes", "Electrolyte support during and after training"],
+      "clinical":  ["Vitamin D and magnesium check"]
+    },
+    "Moderate": {
+      "lifestyle": ["Avoid two consecutive high-load training days", "Monitor subjective recovery score daily"],
+      "nutrition": ["Protein timing consistency", "Dietary zinc and magnesium from whole foods"],
+      "clinical":  []
+    },
+    "Low": {
+      "lifestyle": ["Maintain current recovery habits"],
+      "nutrition": ["Maintain nutritional recovery support"],
+      "clinical":  []
+    }
+  }
+}

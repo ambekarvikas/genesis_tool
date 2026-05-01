@@ -13,6 +13,8 @@ from services.scoring import calculate_scores
 from services.r_integration import generate_pathway
 from services.mapping import enrich_pathways
 from services.clinical_engine import build_clinical_summary, build_overall_summary
+from services.decision_engine import build_decision_output, get_top_issues
+from services.trends import interpret_trend, build_summary as build_trend_summary
 from db.database import Base, engine, get_db, SessionLocal
 from models.entities import Patient, Report, Score, Pathway, PathwayScore, Insight
 
@@ -140,6 +142,7 @@ def _systems_to_insights(clinical_systems: list[dict]) -> list[dict]:
                 "score": item.get("score"),
                 "rank": item.get("rank"),
                 "trend": item.get("trend"),
+                "outcome_prediction": item.get("outcome_prediction"),
                 "pathway": None,
                 "n_genes": item.get("reason", {}).get("n_genes"),
             }
@@ -271,7 +274,6 @@ def patient_history(patient_id: int, db: Annotated[Session, Depends(get_db)]):
         })
     return history
 
-
 @app.post("/analyze")
 async def analyze(
     db: Annotated[Session, Depends(get_db)],
@@ -312,8 +314,31 @@ async def analyze(
     insights = _systems_to_insights(clinical_systems)
     top_issues = insights[:3]
     focus_areas = _build_focus_areas(clinical_systems, system_scores)
+
+    # Decision engine — ranked system list with priority scores
+    system_reasons = {s.get("system"): s.get("reason", {}) for s in clinical_systems}
+    decision_ranked = build_decision_output(system_scores, system_reasons)
+
+    # Trend interpretation per system (requires prior history)
+    prior_reports = (
+        db.query(Report)
+        .filter(Report.patient_id == patient_id)
+        .order_by(Report.created_at.desc())
+        .limit(2)
+        .all()
+    )
+    prior_scores: dict[str, int] | None = None
+    if len(prior_reports) >= 1:
+        prior_score_rows = db.query(Score).filter(Score.report_id == prior_reports[0].id).all()
+        prior_scores = {r.system: round(r.score) for r in prior_score_rows}
+
+    trends = {
+        system: interpret_trend(prior_scores.get(system) if prior_scores else None, score)
+        for system, score in system_scores.items()
+    }
+
     summary = {
-        "overall": build_overall_summary(clinical_systems),
+        "overall": build_trend_summary(system_scores),
         "top_issues": [
             {
                 "system": row.get("system"),
@@ -341,6 +366,8 @@ async def analyze(
         "systems":       clinical_systems,
         "system_scores": system_scores,
         "top_issues":    top_issues,
+        "decision":      decision_ranked,
+        "trends":        trends,
         "insights":      insights,
         "focus_areas":   focus_areas,
         "pathways":      pathway_rows,
