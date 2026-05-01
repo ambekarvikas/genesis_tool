@@ -94,3 +94,16 @@ class Intervention(Base):
     interventions: Mapped[dict] = mapped_column(JSON)
     adherence: Mapped[str] = mapped_column(String(20), default="unknown")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+
+
+class ProtocolPerformance(Base):
+    __tablename__ = "protocol_performance"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    system: Mapped[str] = mapped_column(String(50), index=True)
+    protocol: Mapped[str] = mapped_column(String(255), index=True)
+    cases: Mapped[int] = mapped_column(Integer, default=0)
+    avg_delta: Mapped[float] = mapped_column(Float, default=0.0)
+    median_delta: Mapped[float] = mapped_column(Float, default=0.0)
+    success_rate: Mapped[float] = mapped_column(Float, default=0.0)
+    last_updated: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

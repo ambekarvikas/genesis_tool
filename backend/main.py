@@ -17,12 +17,17 @@ from services.clinical_engine import build_clinical_summary_with_interactions, b
 from services.decision_engine import build_decision_output, get_top_issues
 from services.trends import interpret_trend, build_summary as build_trend_summary
 from db.database import Base, engine, get_db, SessionLocal
-from models.entities import Patient, Report, Score, Pathway, PathwayScore, Insight, Intervention
+from models.entities import Patient, Report, Score, Pathway, PathwayScore, Insight, Intervention, ProtocolPerformance
 from services.outcome_validation import (
     validate_outcome,
     get_intervention_history,
     assess_intervention_effectiveness,
     build_adaptive_recommendation,
+)
+from services.evidence_engine import (
+    get_evidence_for_system,
+    get_evidence_priority_modifier,
+    refresh_protocol_performance,
 )
 
 app = FastAPI()
@@ -374,10 +379,53 @@ async def analyze(
             effectiveness,
             system_interactions,
         )
+
+        # --- Evidence layer ---
+        raw_actions = item.get("actions", {})
+        action_items = []
+        if isinstance(raw_actions, dict):
+            for cat in ("lifestyle", "nutrition", "clinical"):
+                action_items.extend(raw_actions.get(cat) or [])
+        elif isinstance(raw_actions, list):
+            action_items = raw_actions
+        evidence = get_evidence_for_system(db, system, action_items or None)
+        item["evidence"] = evidence
+
+        # Evidence-based priority modifier
+        ev_modifier = get_evidence_priority_modifier(evidence.get("success_rate_raw"))
+        item["evidence_priority_modifier"] = ev_modifier
+        if ev_modifier == "boost":
+            item["evidence_note"] = (
+                f"Evidence supports this protocol: {evidence['success_rate']} success rate "
+                f"across {evidence['similar_cases']} similar cases"
+            )
+        elif ev_modifier == "lower":
+            item["evidence_note"] = (
+                f"Protocol underperforms historically: {evidence['success_rate']} success rate "
+                f"across {evidence['similar_cases']} cases — consider alternative"
+            )
+        else:
+            item["evidence_note"] = None
+
+        # Actual outcome for this system since last report
+        actual_outcome = None
+        if prior_scores and system in prior_scores:
+            delta = (system_scores.get(system) or 0) - prior_scores[system]
+            actual_outcome = {
+                "previous_score": prior_scores[system],
+                "current_score": system_scores.get(system),
+                "delta": round(delta, 1),
+                "direction": "improved" if delta > 0 else ("declined" if delta < 0 else "unchanged"),
+            }
+        item["actual_outcome"] = actual_outcome
+
+        # Risk flag: incorporate evidence
         if item.get("confidence") == "Low":
             item["risk_flag"] = "Low confidence — validate with lab biomarkers"
         elif effectiveness.get("recommendation") == "escalate":
             item["risk_flag"] = "Previous protocol underperformed — validate progression with biomarkers and clinical review"
+        elif ev_modifier == "lower" and evidence["similar_cases"] >= 5:
+            item["risk_flag"] = f"Evidence shows <50% success rate for this protocol ({evidence['similar_cases']} cases) — consider escalation"
         else:
             item["risk_flag"] = None
 
@@ -439,6 +487,43 @@ async def analyze(
             "rows_used": base_scores.get("rows_used"),
         },
     }
+
+
+@app.post("/evidence/refresh")
+def refresh_evidence(
+    db: Annotated[Session, Depends(get_db)],
+):
+    """
+    Recompute protocol performance statistics from all stored intervention
+    + outcome data and upsert into protocol_performance table.
+
+    Call after recording new interventions or when evidence feels stale.
+    """
+    written = refresh_protocol_performance(db)
+    return {"status": "ok", "protocols_updated": written}
+
+
+@app.get("/evidence/{system}")
+def get_system_evidence(
+    system: str,
+    db: Annotated[Session, Depends(get_db)],
+):
+    """
+    Return aggregated evidence for a system across all patients.
+
+    Returns:
+        {
+            "system": str,
+            "similar_cases": int,
+            "avg_improvement": str,
+            "success_rate": str,
+            "evidence_quality": "Strong" | "Moderate" | "Limited" | "None",
+            "best_protocol": str | None,
+            "worst_protocol": str | None
+        }
+    """
+    evidence = get_evidence_for_system(db, system)
+    return {"system": system, **evidence}
 
 
 @app.post("/interventions")
