@@ -11,8 +11,8 @@ from sqlalchemy.orm import Session
 
 from services.scoring import calculate_scores
 from services.r_integration import generate_pathway
-from services.mapping import enrich_pathways, get_pathway_entry
-from services.rule_engine import evaluate_rules, get_priority, get_severity_and_urgency, calculate_confidence
+from services.mapping import enrich_pathways
+from services.clinical_engine import build_clinical_summary, build_overall_summary
 from db.database import Base, engine, get_db, SessionLocal
 from models.entities import Patient, Report, Score, Pathway, PathwayScore, Insight
 
@@ -33,15 +33,6 @@ SYSTEM_BY_CATEGORY = {
     "ASTHMA": "Inflammation",
     "PROSTATE_CANCER": "Inflammation",
 }
-
-SYSTEM_FOCUS_GOALS = {
-    "Energy":       "Improve mitochondrial function and daily energy stability",
-    "Inflammation": "Reduce chronic inflammatory burden below baseline threshold",
-    "Detox":        "Strengthen detoxification and antioxidant defence",
-    "Brain":        "Support cognitive resilience and neurotransmitter balance",
-    "Recovery":     "Enhance cellular repair, hormonal balance and training recovery",
-}
-
 
 def _normalize_input_df(df: pd.DataFrame) -> pd.DataFrame:
     col_map = {col.lower(): col for col in df.columns}
@@ -97,6 +88,7 @@ def _aggregate_system_scores(pathway_rows: list[dict]) -> dict[str, int]:
     for row in pathway_rows:
         category = row.get("category") or "UNCATEGORISED"
         system = SYSTEM_BY_CATEGORY.get(category, "Recovery")
+        row["system"] = system
         n_genes = row.get("n_genes") or 0
         if n_genes <= 0:
             continue
@@ -113,144 +105,49 @@ def _aggregate_system_scores(pathway_rows: list[dict]) -> dict[str, int]:
     return systems
 
 
-def _build_insights(system_scores: dict[str, int], pathway_rows: list[dict]) -> list[dict]:
-    rule_insights = evaluate_rules(system_scores)
+def _systems_to_insights(clinical_systems: list[dict]) -> list[dict]:
     insights: list[dict] = []
-    seen_systems: set[str] = set()
-
-    for row in rule_insights:
-        seen_systems.add(row["system"])
-        insights.append({
-            "issue": row["issue"],
-            "impact": row["impact"],
-            "symptoms": row.get("symptoms", []),
-            "action": row["actions"],
-            "recommended_actions": row["actions"],
-            "expected_outcome": row.get("expected_outcome", ""),
-            "priority": row["priority"],
-            "severity": row["severity"],
-            "urgency": row["urgency"],
-            "confidence": "High",
-            "clinical_label": row["issue"],
-            "focus_area": SYSTEM_FOCUS_GOALS.get(row["system"], ""),
-            "goal": row.get("goal", ""),
-            "system": row["system"],
-            "score": row["score"],
-            "rank": row.get("rank", 99),
-            "pathway": None,
-            "n_genes": None,
-        })
-
-    low_pathways = [r for r in pathway_rows if r.get("n_genes", 0) and r.get("score", 50) < 40]
-    low_pathways = sorted(low_pathways, key=lambda r: r.get("score", 50))[:3]
-
-    for row in low_pathways:
-        system = SYSTEM_BY_CATEGORY.get(row.get("category") or "", "Recovery")
-        entry = get_pathway_entry(str(row.get("pathway") or ""))
-        n_genes = int(row.get("n_genes") or 0)
-        score = float(row.get("score", 50))
-        severity, urgency = get_severity_and_urgency(score)
-        confidence = calculate_confidence(n_genes)
-        if entry:
-            label    = entry.get("label", f"{system} system resilience")
-            impact   = entry.get("impact", "Pathway activity suggests reduced system resilience.")
-            actions  = entry.get("actions", ["Correlate with symptoms", "Reassess lifestyle factors"])
-            symptoms = entry.get("symptoms", [])
-        else:
-            label    = f"{system} pathway strain"
-            impact   = "System-level pathway activity suggests reduced resilience that may increase symptom variability."
-            actions  = ["Correlate with symptoms", "Reassess nutrition, sleep and training load"]
-            symptoms = []
-        target = 55
-        goal = f"Improve pathway score from {round(score)} to {target}+"
-        insights.append({
-            "issue": f"{label} - pathway suppression detected",
-            "impact": impact,
-            "symptoms": symptoms,
-            "action": actions,
-            "recommended_actions": actions,
-            "expected_outcome": f"Pathway score should recover toward {target}+ with consistent protocol.",
-            "priority": get_priority(score),
-            "severity": severity,
-            "urgency": urgency,
-            "confidence": confidence,
-            "clinical_label": label,
-            "focus_area": SYSTEM_FOCUS_GOALS.get(system, ""),
-            "goal": goal,
-            "system": system,
-            "score": round(score),
-            "rank": 99,
-            "pathway": row.get("pathway"),
-            "n_genes": n_genes,
-        })
-
-    _SEVERITY_RANK = {"Critical": 0, "High": 1, "Moderate": 2, "Low": 3}
-    insights.sort(key=lambda r: (_SEVERITY_RANK.get(r.get("severity", "Low"), 9), r.get("score", 50)))
-
-    seen: set[str] = set()
-    deduped: list[dict] = []
-    for item in insights:
-        key = f"{item['system']}::{item['issue'][:40]}"
-        if key in seen:
-            continue
-        seen.add(key)
-        deduped.append(item)
-
-    for idx, item in enumerate(deduped, start=1):
-        item["rank"] = idx
-
-    return deduped
+    for item in clinical_systems:
+        insights.append(
+            {
+                "issue": item.get("issue"),
+                "impact": item.get("impact") or item.get("issue"),
+                "symptoms": item.get("symptoms", []),
+                "action": item.get("actions", []),
+                "recommended_actions": item.get("actions", []),
+                "expected_outcome": item.get("expected_outcome", ""),
+                "priority": item.get("priority", "Moderate"),
+                "severity": item.get("severity", item.get("priority", "Moderate")),
+                "urgency": item.get("urgency", "Medium"),
+                "confidence": item.get("confidence", "Medium"),
+                "clinical_label": item.get("label") or item.get("system"),
+                "focus_area": item.get("goal") or f"Improve {item.get('system')} function",
+                "goal": item.get("goal"),
+                "system": item.get("system"),
+                "score": item.get("score"),
+                "rank": item.get("rank"),
+                "pathway": None,
+                "n_genes": item.get("reason", {}).get("n_genes"),
+            }
+        )
+    return insights
 
 
-def _build_focus_areas(insights: list[dict], systems: dict[str, int]) -> list[dict]:
+def _build_focus_areas(clinical_systems: list[dict], system_scores: dict[str, int]) -> list[dict]:
     areas: list[dict] = []
-    seen: set[str] = set()
-
-    for row in insights:
+    for row in clinical_systems[:3]:
         system = row.get("system", "")
-        if system in seen:
-            continue
-        seen.add(system)
-        score = systems.get(system, 50)
-        high_is_bad = system == "Inflammation"
-        target = row.get("target_score") or (
-            max(50, score - 15) if high_is_bad else min(75, score + 15)
-        )
-        goal = row.get("goal") or (
-            f"Reduce {system} score from {score} to {target}"
-            if high_is_bad
-            else f"Increase {system} score from {score} to {target}"
-        )
-        areas.append({
-            "title": SYSTEM_FOCUS_GOALS.get(system, f"Improve {system} resilience"),
-            "reason": row.get("impact", ""),
-            "system": system,
-            "urgency": row.get("urgency", "Medium"),
-            "goal": goal,
-            "current_score": score,
-            "target_score": target,
-        })
-        if len(areas) >= 3:
-            break
-
-    if len(areas) < 2:
-        for system, score in sorted(systems.items(), key=lambda x: x[1]):
-            if system in seen:
-                continue
-            seen.add(system)
-            high_is_bad = system == "Inflammation"
-            target = max(50, score - 10) if high_is_bad else min(70, score + 15)
-            areas.append({
-                "title": SYSTEM_FOCUS_GOALS.get(system, f"Improve {system} resilience"),
-                "reason": f"{system} score is {score}. Sustained lifestyle support is recommended over the next 30 days.",
+        areas.append(
+            {
+                "title": row.get("label", f"{system} Function"),
+                "reason": row.get("issue", ""),
                 "system": system,
-                "urgency": "Medium",
-                "goal": f"Increase {system} score from {score} to {target}",
-                "current_score": score,
-                "target_score": target,
-            })
-            if len(areas) >= 2:
-                break
+                "urgency": row.get("urgency", "Medium"),
+                "goal": row.get("goal") or f"Improve {system} function",
+                "current_score": row.get("score", system_scores.get(system, 50)),
+                "target_score": None,
+            }
+        )
 
     return areas
 
@@ -392,16 +289,29 @@ async def analyze(
 
     enrich_pathways(pathway_rows)
 
-    categories  = _group_by_category(pathway_rows)
-    systems     = _aggregate_system_scores(pathway_rows)
-    insights    = _build_insights(systems, pathway_rows)
-    top_issues  = insights[:3]
-    focus_areas = _build_focus_areas(insights, systems)
+    categories = _group_by_category(pathway_rows)
+    system_scores = _aggregate_system_scores(pathway_rows)
+    clinical_systems = build_clinical_summary(pathway_rows, system_scores)
+    insights = _systems_to_insights(clinical_systems)
+    top_issues = insights[:3]
+    focus_areas = _build_focus_areas(clinical_systems, system_scores)
+    summary = {
+        "overall": build_overall_summary(clinical_systems),
+        "top_issues": [
+            {
+                "system": row.get("system"),
+                "issue": row.get("issue"),
+                "priority": row.get("priority"),
+                "score": row.get("score"),
+            }
+            for row in clinical_systems[:3]
+        ],
+    }
 
     report = _persist_report(
         db=db,
         patient_id=patient_id,
-        systems=systems,
+        systems=system_scores,
         pathways=pathway_rows,
         insights=insights,
     )
@@ -410,7 +320,9 @@ async def analyze(
         "patient_id":    patient_id,
         "report_id":     report.id,
         "created_at":    report.created_at.isoformat(),
-        "systems":       systems,
+        "summary":       summary,
+        "systems":       clinical_systems,
+        "system_scores": system_scores,
         "top_issues":    top_issues,
         "insights":      insights,
         "focus_areas":   focus_areas,

@@ -1,0 +1,207 @@
+{
+  "Energy": {
+    "label": "Energy Function",
+    "system_weight": 1.15,
+    "high_is_worse": false,
+    "focus_goal": "Improve mitochondrial function and daily energy stability",
+    "default_symptoms": ["Fatigue", "Energy crashes", "Low exercise tolerance"],
+    "bands": [
+      {
+        "min": 0,
+        "max": 34,
+        "priority": "Critical",
+        "issue": "Severe cellular energy deficit",
+        "actions": ["CoQ10 200mg/day", "Sleep 8+ hours nightly", "Reduce intense training load", "Optimize protein and micronutrient intake"],
+        "expected_outcome": "Energy resilience improves and daily fatigue burden reduces over 6-8 weeks."
+      },
+      {
+        "min": 35,
+        "max": 49,
+        "priority": "High",
+        "issue": "Reduced cellular energy output",
+        "actions": ["CoQ10 100-200mg/day", "Post-meal 10 minute walks", "Prioritize sleep consistency", "Reduce refined sugar"],
+        "expected_outcome": "More stable daily energy and fewer afternoon crashes in 4-6 weeks."
+      },
+      {
+        "min": 50,
+        "max": 64,
+        "priority": "Moderate",
+        "issue": "Sub-optimal energy metabolism",
+        "actions": ["Strength training 3x/week", "Hydration 2L/day", "Increase whole-food carbohydrates around activity"],
+        "expected_outcome": "Energy score trends toward optimal range with sustained routine."
+      },
+      {
+        "min": 65,
+        "max": 100,
+        "priority": "Low",
+        "issue": "Energy system stable",
+        "actions": ["Maintain current nutrition and sleep routine"],
+        "expected_outcome": "Energy stability maintained."
+      }
+    ]
+  },
+  "Inflammation": {
+    "label": "Inflammation Control",
+    "system_weight": 1.25,
+    "high_is_worse": true,
+    "focus_goal": "Reduce chronic inflammatory burden",
+    "default_symptoms": ["Joint stiffness", "Persistent soreness", "Poor recovery"],
+    "bands": [
+      {
+        "min": 0,
+        "max": 34,
+        "priority": "Critical",
+        "issue": "Severe inflammatory burden",
+        "actions": ["Omega-3 EPA+DHA 2-4g/day", "Anti-inflammatory meal pattern", "Limit ultra-processed foods", "Prioritize stress reduction and sleep"],
+        "expected_outcome": "Inflammatory symptom burden decreases and recovery improves over 6-8 weeks."
+      },
+      {
+        "min": 35,
+        "max": 49,
+        "priority": "High",
+        "issue": "Elevated chronic inflammation",
+        "actions": ["Increase omega-3 intake", "Reduce seed-oil heavy foods", "Increase colorful vegetables", "Consistent sleep schedule"],
+        "expected_outcome": "Inflammation trend improves with lower tissue stress."
+      },
+      {
+        "min": 50,
+        "max": 64,
+        "priority": "Moderate",
+        "issue": "Borderline inflammatory load",
+        "actions": ["Maintain anti-inflammatory diet", "Track stress/sleep debt", "Continue movement routine"],
+        "expected_outcome": "Inflammation remains controlled and symptoms stay manageable."
+      },
+      {
+        "min": 65,
+        "max": 100,
+        "priority": "Low",
+        "issue": "Inflammation profile stable",
+        "actions": ["Maintain current routine and periodic monitoring"],
+        "expected_outcome": "Inflammatory balance maintained."
+      }
+    ]
+  },
+  "Detox": {
+    "label": "Detox Function",
+    "system_weight": 1.2,
+    "high_is_worse": false,
+    "focus_goal": "Strengthen detoxification and antioxidant defense",
+    "default_symptoms": ["Fatigue", "Headaches", "Toxin sensitivity"],
+    "bands": [
+      {
+        "min": 0,
+        "max": 34,
+        "priority": "Critical",
+        "issue": "Severely reduced detox capacity",
+        "actions": ["NAC 600-1200mg/day", "Hydration 2-2.5L/day", "Cruciferous vegetables daily", "Reduce alcohol and toxin exposure"],
+        "expected_outcome": "Improved detox resilience and lower sensitivity burden over 6-8 weeks."
+      },
+      {
+        "min": 35,
+        "max": 49,
+        "priority": "High",
+        "issue": "Reduced detox capacity",
+        "actions": ["Increase sulfur-rich foods", "Consider NAC", "Hydration optimization", "Review environmental toxin load"],
+        "expected_outcome": "Detox efficiency improves with better tolerance and recovery."
+      },
+      {
+        "min": 50,
+        "max": 64,
+        "priority": "Moderate",
+        "issue": "Sub-optimal detox support",
+        "actions": ["Maintain hydration and fiber intake", "Continue antioxidant-rich diet"],
+        "expected_outcome": "Detox system trends toward stable optimal function."
+      },
+      {
+        "min": 65,
+        "max": 100,
+        "priority": "Low",
+        "issue": "Detox system stable",
+        "actions": ["Maintain current detox-supportive habits"],
+        "expected_outcome": "Detox balance maintained."
+      }
+    ]
+  },
+  "Brain": {
+    "label": "Neurocognitive Function",
+    "system_weight": 1.1,
+    "high_is_worse": false,
+    "focus_goal": "Support cognitive resilience and neurotransmitter balance",
+    "default_symptoms": ["Brain fog", "Mood variability", "Poor focus"],
+    "bands": [
+      {
+        "min": 0,
+        "max": 34,
+        "priority": "Critical",
+        "issue": "Severe neurocognitive pathway suppression",
+        "actions": ["Sleep consistency protocol", "Stress load reduction plan", "Omega-3 support", "Reduce stimulant overuse"],
+        "expected_outcome": "Improved cognitive clarity and stress tolerance over 6-8 weeks."
+      },
+      {
+        "min": 35,
+        "max": 49,
+        "priority": "High",
+        "issue": "Reduced neurocognitive resilience",
+        "actions": ["Sleep 7-8 hours consistently", "Protein timing across meals", "Daily stress regulation"],
+        "expected_outcome": "Better focus and mood stability in 4-6 weeks."
+      },
+      {
+        "min": 50,
+        "max": 64,
+        "priority": "Moderate",
+        "issue": "Mild cognitive pathway strain",
+        "actions": ["Maintain sleep hygiene", "Aerobic activity 3x/week", "Reduce late caffeine"],
+        "expected_outcome": "Cognitive performance trends toward stable baseline."
+      },
+      {
+        "min": 65,
+        "max": 100,
+        "priority": "Low",
+        "issue": "Brain system stable",
+        "actions": ["Maintain current routine"],
+        "expected_outcome": "Cognitive resilience remains stable."
+      }
+    ]
+  },
+  "Recovery": {
+    "label": "Recovery Capacity",
+    "system_weight": 1.05,
+    "high_is_worse": false,
+    "focus_goal": "Improve tissue repair and recovery capacity",
+    "default_symptoms": ["Slow recovery", "Persistent soreness", "Poor adaptation"],
+    "bands": [
+      {
+        "min": 0,
+        "max": 34,
+        "priority": "Critical",
+        "issue": "Severely impaired recovery capacity",
+        "actions": ["Reduce training volume", "Protein 1.6-2.0g/kg/day", "Sleep 8+ hours", "Micronutrient optimization"],
+        "expected_outcome": "Recovery burden decreases and adaptation improves over 6-8 weeks."
+      },
+      {
+        "min": 35,
+        "max": 49,
+        "priority": "High",
+        "issue": "Reduced repair and adaptation",
+        "actions": ["Post-training recovery protocol", "Hydration and electrolyte support", "Sleep regularization"],
+        "expected_outcome": "Improved training recovery and less delayed soreness."
+      },
+      {
+        "min": 50,
+        "max": 64,
+        "priority": "Moderate",
+        "issue": "Sub-optimal recovery signaling",
+        "actions": ["Maintain protein timing", "Monitor training load/recovery balance"],
+        "expected_outcome": "Recovery trends toward optimal baseline."
+      },
+      {
+        "min": 65,
+        "max": 100,
+        "priority": "Low",
+        "issue": "Recovery system stable",
+        "actions": ["Maintain current recovery habits"],
+        "expected_outcome": "Recovery stability maintained."
+      }
+    ]
+  }
+}

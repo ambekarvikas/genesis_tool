@@ -80,7 +80,35 @@ type AnalyzeResult = {
   patient_id: number;
   report_id: number;
   created_at: string;
-  systems: SystemScores;
+  summary?: {
+    overall?: string;
+    top_issues?: Array<{
+      system: string;
+      issue: string;
+      priority: string;
+      score: number;
+    }>;
+  };
+  systems: Array<{
+    system: keyof SystemScores;
+    label?: string;
+    score: number;
+    priority?: string;
+    priority_score?: number;
+    issue?: string;
+    symptoms?: string[];
+    actions?: string[];
+    expected_outcome?: string;
+    confidence?: string;
+    reason?: {
+      n_genes?: number;
+      median_fc?: number | null;
+    };
+    goal?: string;
+    urgency?: string;
+    rank?: number;
+  }>;
+  system_scores?: SystemScores;
   top_issues: Insight[];
   insights: Insight[];
   focus_areas?: FocusArea[];
@@ -380,6 +408,17 @@ export default function Home() {
 
   const categories = result?.pathway?.categories ?? [];
   const pathwayGenes = result?.pathway_genes ?? {};
+  const systemScores: SystemScores = (() => {
+    if (!result) {
+      return { Energy: 50, Inflammation: 50, Detox: 50, Brain: 50, Recovery: 50 };
+    }
+    if (result.system_scores) return result.system_scores;
+    const fallback: SystemScores = { Energy: 50, Inflammation: 50, Detox: 50, Brain: 50, Recovery: 50 };
+    for (const row of result.systems ?? []) {
+      fallback[row.system] = row.score;
+    }
+    return fallback;
+  })();
   const totalPathways = categories.reduce((a, c) => a + c.pathway_count, 0);
   const totalMatched = categories.reduce((a, c) => a + c.matched_count, 0);
   const focusAreas = result?.focus_areas ?? [];
@@ -406,7 +445,7 @@ export default function Home() {
       }).slice(0, 3);
     }
 
-    const systemRows = Object.entries(result?.systems ?? {}) as Array<[keyof SystemScores, number]>;
+    const systemRows = Object.entries(systemScores) as Array<[keyof SystemScores, number]>;
     const byScore = [...systemRows].sort((a, b) => a[1] - b[1]).slice(0, 2);
     return byScore.map(([system, score]) => ({
       title: `${system} resilience reset`,
@@ -440,7 +479,7 @@ export default function Home() {
     const patientName = selectedPatient?.name ?? `ID ${result.patient_id}`;
     const generatedAt = new Date(result.created_at).toLocaleString();
 
-    const systemsHtml = (Object.entries(result.systems) as Array<[keyof SystemScores, number]>)
+    const systemsHtml = (Object.entries(systemScores) as Array<[keyof SystemScores, number]>)
       .map(([system, value]) => `<tr><td>${escapeHtml(system)}</td><td style="text-align:center;">${value}</td></tr>`)
       .join("");
 
@@ -475,6 +514,12 @@ export default function Home() {
     const monthlyActionsHtml = topActions.length > 0
       ? `<ol>${topActions.map((action) => `<li>${escapeHtml(action)}</li>`).join("")}</ol>`
       : "<p>Follow your clinician-approved nutrition, sleep, movement, and supplement plan, then re-test in 4–6 weeks to confirm score movement.</p>";
+
+    const expectedOutcomesHtml = (result.top_issues ?? [])
+      .slice(0, 3)
+      .map((issue) => issue.expected_outcome ? `<li>${escapeHtml(issue.expected_outcome)}</li>` : "")
+      .filter(Boolean)
+      .join("");
 
     const lowPathways = [...(result.pathways ?? [])]
       .filter((row) => (row.n_genes ?? 0) > 0)
@@ -535,14 +580,18 @@ export default function Home() {
         <body>
           <h1>Rhino Gene Intelligence &ndash; Client Report</h1>
           <p><strong>Patient:</strong> ${escapeHtml(patientName)}<br/><strong>Generated:</strong> ${escapeHtml(generatedAt)}</p>
+          <h2>Executive Summary</h2>
+          <p>${escapeHtml(result.summary?.overall ?? "Top systems require targeted intervention over the next 30 days.")}</p>
           <h2>System Snapshot</h2>
           <table>${systemsHtml}</table>
-          <h2>Top Priorities</h2>
+          <h2>Key Issues</h2>
           ${issueRowsHtml || "<p>No major issues found.</p>"}
           <h2>Focus Areas (Next 30 Days)</h2>
           <ol>${focusHtml || "<li>No focus areas generated.</li>"}</ol>
-          <h2>What to do this month</h2>
+          <h2>Actions</h2>
           ${monthlyActionsHtml}
+          <h2>Expected Outcomes</h2>
+          <ol>${expectedOutcomesHtml || "<li>Expected outcomes will populate after issue generation.</li>"}</ol>
           <div style="margin-top:20px;"><button onclick="window.print()" style="background:#0f766e;color:#fff;border:none;padding:9px 16px;border-radius:6px;cursor:pointer;font-size:13px;">&#128438; Print / Save as PDF</button></div>
         </body></html>`
       : `
@@ -564,10 +613,16 @@ export default function Home() {
         <body>
           <h1>Rhino Gene Intelligence &ndash; Doctor Report</h1>
           <p><strong>Patient:</strong> ${escapeHtml(patientName)}<br/><strong>Patient ID:</strong> ${result.patient_id}<br/><strong>Report ID:</strong> ${result.report_id}<br/><strong>Generated:</strong> ${escapeHtml(generatedAt)}</p>
+          <h2>Executive Summary</h2>
+          <p>${escapeHtml(result.summary?.overall ?? "Top systems require targeted intervention over the next 30 days.")}</p>
           <h2>System Scores</h2>
           <table>${systemsHtml}</table>
-          <h2>Clinical Priorities</h2>
+          <h2>Key Issues</h2>
           ${issueRowsHtml || "<p>No major issues found.</p>"}
+          <h2>Actions</h2>
+          ${monthlyActionsHtml}
+          <h2>Expected Outcomes</h2>
+          <ol>${expectedOutcomesHtml || "<li>Expected outcomes will populate after issue generation.</li>"}</ol>
           <h2>Lowest Pathway Scores (Matched)</h2>
           <table border="1" cellpadding="6">
             <thead><tr><th style="text-align:left;">Pathway</th><th style="text-align:left;">KEGG ID</th><th>Score</th><th>Genes</th><th>Median log2FC</th></tr></thead>
@@ -703,15 +758,15 @@ export default function Home() {
             background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 10, padding: "12px 18px",
           }}>
             <div><span style={{ fontSize: 12, color: "#64748b" }}>Energy</span><br/>
-              <strong style={{ fontSize: 14, color: scoreColor(result.systems.Energy) }}>{result.systems.Energy}</strong></div>
+              <strong style={{ fontSize: 14, color: scoreColor(systemScores.Energy) }}>{systemScores.Energy}</strong></div>
             <div><span style={{ fontSize: 12, color: "#64748b" }}>Inflammation</span><br/>
-              <strong style={{ fontSize: 14, color: scoreColor(result.systems.Inflammation) }}>{result.systems.Inflammation}</strong></div>
+              <strong style={{ fontSize: 14, color: scoreColor(systemScores.Inflammation) }}>{systemScores.Inflammation}</strong></div>
             <div><span style={{ fontSize: 12, color: "#64748b" }}>Detox</span><br/>
-              <strong style={{ fontSize: 14, color: scoreColor(result.systems.Detox) }}>{result.systems.Detox}</strong></div>
+              <strong style={{ fontSize: 14, color: scoreColor(systemScores.Detox) }}>{systemScores.Detox}</strong></div>
             <div><span style={{ fontSize: 12, color: "#64748b" }}>Brain</span><br/>
-              <strong style={{ fontSize: 14, color: scoreColor(result.systems.Brain) }}>{result.systems.Brain}</strong></div>
+              <strong style={{ fontSize: 14, color: scoreColor(systemScores.Brain) }}>{systemScores.Brain}</strong></div>
             <div><span style={{ fontSize: 12, color: "#64748b" }}>Recovery</span><br/>
-              <strong style={{ fontSize: 14, color: scoreColor(result.systems.Recovery) }}>{result.systems.Recovery}</strong></div>
+              <strong style={{ fontSize: 14, color: scoreColor(systemScores.Recovery) }}>{systemScores.Recovery}</strong></div>
             <div><span style={{ fontSize: 12, color: "#64748b" }}>Pathways scored</span><br/>
               <strong style={{ fontSize: 14 }}>{totalPathways}</strong></div>
             <div><span style={{ fontSize: 12, color: "#64748b" }}>Pathways with matches</span><br/>
@@ -720,12 +775,19 @@ export default function Home() {
               <strong style={{ fontSize: 14 }}>{categories.length}</strong></div>
           </div>
 
+          {result.summary?.overall && (
+            <div style={{ background: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: 10, padding: "12px 16px" }}>
+              <h2 style={{ marginTop: 0, marginBottom: 8, fontSize: 16 }}>System Summary</h2>
+              <div style={{ color: "#334155", fontSize: 14 }}>{result.summary.overall}</div>
+            </div>
+          )}
+
           {previousHistory && (
             <div style={{ background: "#f8fafc", border: "1px solid #dbeafe", borderRadius: 10, padding: "14px 16px" }}>
               <h2 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>Trend vs Previous Report</h2>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, fontSize: 13 }}>
                 {(["Energy", "Inflammation", "Detox", "Brain", "Recovery"] as const).map((system) => {
-                  const current = result.systems[system];
+                  const current = systemScores[system];
                   const previous = previousHistory.systems[system] ?? current;
                   const delta = current - previous;
                   return (
