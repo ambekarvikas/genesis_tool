@@ -5,10 +5,11 @@
 ![Python](https://img.shields.io/badge/python-3.13-blue)
 ![FastAPI](https://img.shields.io/badge/fastapi-0.136-green)
 ![Next.js](https://img.shields.io/badge/next.js-16-black)
+![Version](https://img.shields.io/badge/version-7.0-purple)
 
-> Transform raw gene expression data into **actionable clinical decisions** in seconds.
+> Transform raw gene expression data into **adaptive clinical decisions** that learn from what worked — and what didn't.
 
-Genesis converts KEGG pathway scores into deterministic clinical systems (Energy, Inflammation, Detox, Brain, Recovery) with **priority-ranked** issues, **confidence-scored** findings, and **outcome predictions**.
+Genesis converts KEGG pathway scores into deterministic clinical systems (Energy, Inflammation, Detox, Brain, Recovery) with **priority-ranked** issues, **confidence-scored** findings, **outcome predictions**, and now **intervention tracking with adaptive protocol escalation**.
 
 ---
 
@@ -24,9 +25,18 @@ You get:
 🔴 CRITICAL: Detox system compromised
 ├─ Impact: Toxin accumulation → fatigue, headaches
 ├─ Actions: NAC 600-1200mg/day, cruciferous vegetables daily
-├─ Expected: +15-25 point improvement in 6-8 weeks  
+├─ Expected: +15-25 point improvement in 6-8 weeks
 ├─ Observable: Reduced headache frequency, better mental clarity
-└─ Confidence: High (12 genes, median FC -0.7)
+├─ Confidence: High (12 genes, median FC -0.7)
+│
+├─ 🔁 ADAPTIVE (v7): Prior protocol showed 0.2 success rate
+│   └─ Escalating → Advanced clinical intervention
+│   └─ Alternative: Specialist consultation + liver enzyme panel
+│
+├─ ⚡ INTERACTION: Detox < 40 AND Inflammation > 60
+│   └─ Priority shift: Resolve Detox first (upstream issue)
+│
+└─ ⚠️  RISK FLAG: Low confidence — validate with lab biomarkers
 ```
 
 ---
@@ -44,13 +54,22 @@ You get:
 - **Per-priority actions**: Lifestyle, nutrition, clinical interventions
 - **Outcome predictions**: Expected score delta, timeline, observable signs
 
+### � Adaptive Protocol Engine *(v7)*
+- **Intervention tracking** — record what was done and patient adherence
+- **Outcome validation** — compare expected vs actual improvement per system
+- **Protocol escalation** — if prior interventions underperformed, escalate automatically
+- **Confidence boosting** — same issue across 2+ reports → upgrades confidence to High
+- **System interaction detection** — detects upstream issues (e.g. Detox driving Inflammation)
+- **Risk flags** — per-system flags when biomarker validation is recommended
+
 ### 📊 Complete Workflow
 1. Upload gene expression file (CSV/XLSX)
 2. R-based KEGG pathway scoring
 3. System aggregation + clinical interpretation
-4. Trend analysis (vs. prior assessment)
-5. Priority-ranked decision output
-6. PDF report generation
+4. Trend analysis (vs. prior assessment) + system interaction detection
+5. Intervention history lookup → adaptive recommendation
+6. Priority-ranked decision output with risk flags
+7. PDF report generation
 
 ---
 
@@ -109,13 +128,14 @@ curl -X POST http://127.0.0.1:8091/analyze \
 ```json
 {
   "summary": {
-    "overall": "Detox and Energy systems are underperforming and should be prioritized in the next intervention cycle.",
+    "overall": "Detox and Energy systems are underperforming. Prioritize Detox — impaired detoxification is driving systemic inflammation.",
     "top_issues": [
       {
         "system": "Detox",
         "issue": "Severely reduced detox capacity",
         "priority": "Critical",
-        "score": 32
+        "score": 32,
+        "risk_flag": "Previous protocol underperformed — validate with biomarkers and clinical review"
       }
     ]
   },
@@ -125,32 +145,36 @@ curl -X POST http://127.0.0.1:8091/analyze \
       "score": 32,
       "priority": "Critical",
       "issue": "Severely reduced detox capacity",
-      "impact": "Phase I/II detox pathways impaired — toxin accumulation driving fatigue and systemic stress",
-      "symptoms": ["Fatigue", "Headaches", "Toxin sensitivity"],
       "actions": {
-        "lifestyle": ["Reduce alcohol and toxin exposure immediately", "Sauna 2-3x/week if cardiovascular health allows"],
+        "lifestyle": ["Remove alcohol", "Sauna 2-3x/week"],
         "nutrition": ["NAC 600-1200mg/day", "Cruciferous vegetables daily"],
-        "clinical": ["Liver function panel: ALT, AST, GGT", "Glutathione or oxidative stress panel"]
+        "clinical": ["Liver panel: ALT, AST, GGT", "Glutathione test"]
       },
-      "expected_outcome": "Improved detox resilience and lower sensitivity burden over 6-8 weeks.",
       "outcome_prediction": {
         "expected_change": "+15 to +25",
-        "timeline": "6–8 weeks with consistent intervention",
-        "observable_signs": ["Reduced headache frequency", "Less sensitivity to environmental toxins", "Improved mental clarity"],
-        "note": "Critical deficit — sustained improvement requires lifestyle + clinical intervention in parallel."
+        "timeline": "6–8 weeks",
+        "observable_signs": ["Reduced headache frequency", "Less toxin sensitivity", "Mental clarity"],
+        "note": "Critical deficit — lifestyle + clinical intervention required in parallel."
       },
       "confidence": "High",
-      "reason": {
-        "score": 32,
-        "n_genes": 12,
-        "median_fc": -0.7
+      "risk_flag": "Previous protocol underperformed — validate progression with biomarkers and clinical review",
+      "intervention_effectiveness": {
+        "avg_outcome_delta": -2.5,
+        "success_rate": 0.2,
+        "recommendation": "escalate",
+        "failed_interventions": ["NAC", "Sleep optimization"]
+      },
+      "adaptive_recommendation": {
+        "base_action": "Advanced protocol for Detox",
+        "escalation": "Previous interventions for Detox underperformed. Shift to advanced clinical intervention.",
+        "alternative_protocol": "Consider specialist consultation, advanced markers (glutathione, bile acids, liver enzymes).",
+        "interaction_note": "Prioritize Detox pathway first — impaired detoxification drives systemic inflammation"
       }
     }
   ],
   "decision": [
     {"system": "Detox", "score": 32, "priority": "Critical", "priority_score": 12.45, "rank": 1},
-    {"system": "Energy", "score": 45, "priority": "High", "priority_score": 8.92, "rank": 2},
-    ...
+    {"system": "Energy", "score": 45, "priority": "High", "priority_score": 8.92, "rank": 2}
   ],
   "trends": {
     "Detox": {
@@ -158,7 +182,93 @@ curl -X POST http://127.0.0.1:8091/analyze \
       "interpretation": "-8 points — active deterioration. Review intervention protocol immediately.",
       "delta": -8
     }
+  },
+  "system_interactions": {
+    "priority_shift": "Prioritize Detox pathway first — impaired detoxification drives systemic inflammation",
+    "reasoning": "Detox is a prerequisite for resolving secondary inflammation",
+    "interdependencies": [["Detox", "Inflammation"]]
+  },
+  "reality_check_flags": [
+    "Low confidence — Detox would benefit from lab biomarker validation (liver enzymes, inflammatory markers)",
+    "Multiple critical systems — prioritize sequentially; address foundational issues (Detox/Inflammation) first"
+  ]
+}
+```
+
+---
+
+## 🔁 Adaptive Endpoints *(v7)*
+
+### Record an Intervention
+
+```bash
+curl -X POST http://127.0.0.1:8091/interventions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "patient_id": 1,
+    "system": "Detox",
+    "interventions": ["NAC 600mg", "Sleep optimization"],
+    "adherence": "partial",
+    "report_id": 42
+  }'
+```
+
+**`adherence` values:** `full` | `partial` | `none` | `unknown`
+
+### Get Intervention History + Effectiveness
+
+```bash
+curl http://127.0.0.1:8091/patient/1/interventions/Detox
+```
+
+```json
+{
+  "patient_id": 1,
+  "system": "Detox",
+  "history": [
+    {
+      "created_at": "2026-04-01T10:00:00",
+      "interventions": ["NAC 600mg", "Sleep optimization"],
+      "adherence": "partial",
+      "outcome_delta": -3.2
+    }
+  ],
+  "effectiveness": {
+    "avg_outcome_delta": -2.5,
+    "success_rate": 0.2,
+    "recommendation": "escalate",
+    "failed_interventions": ["NAC 600mg"]
   }
+}
+```
+
+### Validate an Outcome
+
+```bash
+curl -X POST http://127.0.0.1:8091/validate-outcome \
+  -H "Content-Type: application/json" \
+  -d '{
+    "patient_id": 1,
+    "system": "Detox",
+    "previous_score": 32,
+    "current_score": 36,
+    "expected_min": 5.0,
+    "expected_max": 25.0
+  }'
+```
+
+```json
+{
+  "actual_change": 4,
+  "expected_range": {"min": 5.0, "max": 25.0},
+  "status": "below",
+  "interpretation": "Below expected improvement: +4 points (expected >5.0)",
+  "effectiveness": {"recommendation": "escalate", "success_rate": 0.2},
+  "adaptive_recommendation": {
+    "escalation": "Previous interventions for Detox underperformed. Shift to advanced clinical intervention.",
+    "alternative_protocol": "Specialist consultation, advanced markers."
+  },
+  "risk_flag": "Low confidence — validate with lab biomarkers"
 }
 ```
 
@@ -168,14 +278,15 @@ curl -X POST http://127.0.0.1:8091/analyze \
 
 ### Backend (FastAPI + Python)
 - **`services/r_integration.py`** — R subprocess wrapper with timeout + error handling
-- **`services/clinical_engine.py`** — band-based system definitions + clinical summary
+- **`services/clinical_engine.py`** — band-based system definitions, interaction detection, reality check flags
 - **`services/decision_engine.py`** — priority ranking by genomic evidence weight
 - **`services/outcome_engine.py`** — system-specific outcome predictions
+- **`services/outcome_validation.py`** *(v7)* — validate expected vs actual outcomes, assess effectiveness, build adaptive recommendations
 - **`services/trends.py`** — trend interpretation (vs. prior assessment)
-- **`services/confidence.py`** — weighted formula: coverage + fold-change
+- **`services/confidence.py`** — weighted formula: coverage + fold-change, boosted by repeat history
 - **`config/system_definitions.json`** — 5 systems × 4 severity bands with actions + outcomes
 - **`config/system_actions.json`** — per-priority clinical + nutritional + lifestyle interventions
-- **Database** — SQLAlchemy ORM, MySQL backend (patient history, reports)
+- **Database** — SQLAlchemy ORM, MySQL (patients, reports, scores, interventions)
 
 ### Frontend (Next.js)
 - Pages: Patient selection, file upload, results dashboard, report generation
@@ -314,7 +425,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8091"]
 MYSQL_HOST=localhost
 MYSQL_USER=root
 MYSQL_PASSWORD=password
-MYSQL_DATABASE=genesis
+MYSQL_DB=rhino_gene
 RSCRIPT_PATH=/usr/bin/Rscript
 ```
 
@@ -331,9 +442,9 @@ RSCRIPT_PATH=/usr/bin/Rscript
 ## 🧪 Testing
 
 ```bash
-# Unit tests
+# Syntax validation
 cd backend
-python -m pytest tests/
+python -m py_compile main.py services/*.py
 
 # Live API test
 curl -X GET http://127.0.0.1:8091/patients
@@ -342,6 +453,16 @@ curl -X GET http://127.0.0.1:8091/patients
 curl -X POST http://127.0.0.1:8091/analyze \
   -F "patient_id=1" \
   -F "file=@data/sample_gene.csv"
+
+# Record intervention (v7)
+curl -X POST http://127.0.0.1:8091/interventions \
+  -H "Content-Type: application/json" \
+  -d '{"patient_id": 1, "system": "Detox", "interventions": ["NAC"], "adherence": "partial"}'
+
+# Validate outcome (v7)
+curl -X POST http://127.0.0.1:8091/validate-outcome \
+  -H "Content-Type: application/json" \
+  -d '{"patient_id": 1, "system": "Detox", "previous_score": 32, "current_score": 36}'
 ```
 
 ---
@@ -434,23 +555,29 @@ This system provides clinical decision support, not medical diagnosis.
 
 ## 📊 Project Statistics
 
-- **Total Commits**: 20+
+- **Total Commits**: 25+
 - **Clinical Systems**: 5 (Energy, Inflammation, Detox, Brain, Recovery)
 - **System Severity Bands**: 20 (4 per system)
 - **Action Permutations**: 100+ (5 systems × 4 priorities × 5 categories)
-- **Confidence Metrics**: Validated against genomic coverage + fold-change
-- **Lines of Code**: 3,000+ (Python backend + React/Next.js frontend)
-- **Test Coverage**: 85%+ (core decision engine)
+- **Adaptive Endpoints**: 3 new in v7 (`/interventions`, `/patient/{id}/interventions/{system}`, `/validate-outcome`)
+- **System Interactions Detected**: 3 rules (Detox→Inflammation, Detox→Brain, Energy→Recovery)
+- **Confidence Metrics**: Coverage × fold-change + multi-report boosting
+- **Lines of Code**: 4,000+ (Python backend + React/Next.js frontend)
+- **Database Tables**: 8 (genes, pathways, patients, reports, scores, insights, pathway_scores, interventions)
 
 ---
 
 ## 🚀 Roadmap
 
+- [x] ~~v6: Decision engine, outcome predictions, trend interpretation~~
+- [x] ~~v7: Intervention tracking, outcome validation, adaptive protocol escalation~~
+- [ ] Automated pytest suite for all service modules
+- [ ] Frontend UI for intervention logging and outcome review
 - [ ] Multi-language system definitions (Spanish, Mandarin)
 - [ ] Wearable integration (Apple Health, Fitbit)
 - [ ] Real-time trend dashboards (patient + clinician views)
 - [ ] Batch analysis (multi-patient reports)
-- [ ] Advanced analytics (population-level outcome tracking)
+- [ ] Population-level outcome analytics
 - [ ] Integration with conventional lab tests (CBC, CMP, etc.)
 
 ---
@@ -459,7 +586,7 @@ This system provides clinical decision support, not medical diagnosis.
 
 **Status:** Production-ready. Used in functional medicine and research settings.
 
-**Last Updated:** May 2026
+**Last Updated:** May 2026 — v7: Adaptive Clinical Intelligence
 
 ---
 
