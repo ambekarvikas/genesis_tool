@@ -47,6 +47,8 @@ type Insight = {
   symptoms?: string[];
   expected_outcome?: string;
   recommended_actions?: string[];
+  actions_structured?: { lifestyle?: string[]; nutrition?: string[]; clinical?: string[] };
+  trend?: { status: string; interpretation: string };
   pathway?: string;
   n_genes?: number;
   system: string;
@@ -96,14 +98,16 @@ type AnalyzeResult = {
     priority?: string;
     priority_score?: number;
     issue?: string;
+    impact?: string;
     symptoms?: string[];
-    actions?: string[];
+    actions?: { lifestyle?: string[]; nutrition?: string[]; clinical?: string[] } | string[];
     expected_outcome?: string;
     confidence?: string;
     reason?: {
       n_genes?: number;
       median_fc?: number | null;
     };
+    trend?: { status: string; interpretation: string };
     goal?: string;
     urgency?: string;
     rank?: number;
@@ -330,7 +334,7 @@ export default function Home() {
   const loadPatients = async () => {
     setLoadingPatients(true);
     try {
-      const response = await fetch("http://127.0.0.1:8050/patients");
+      const response = await fetch("http://127.0.0.1:8091/patients");
       if (!response.ok) throw new Error("Failed to load patients");
       const rows: Patient[] = await response.json();
       setPatients(rows);
@@ -346,7 +350,7 @@ export default function Home() {
 
   const loadHistory = async (patientId: number) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8050/patient/${patientId}/history`);
+      const response = await fetch(`http://127.0.0.1:8091/patient/${patientId}/history`);
       if (!response.ok) throw new Error("Failed to load patient history");
       const rows: HistoryRow[] = await response.json();
       setHistory(rows);
@@ -387,7 +391,7 @@ export default function Home() {
     formData.append("patient_id", String(selectedPatientId));
 
     try {
-      const response = await fetch("http://127.0.0.1:8050/analyze", { method: "POST", body: formData });
+      const response = await fetch("http://127.0.0.1:8091/analyze", { method: "POST", body: formData });
 
       if (!response.ok) {
         let msg = "Upload failed.";
@@ -485,12 +489,29 @@ export default function Home() {
 
     const issueRowsHtml = (result.top_issues ?? [])
       .map((issue, index) => {
-        const actions = (issue.recommended_actions ?? issue.action ?? []).map((a) => `<li>${escapeHtml(a)}</li>`).join("");
+        const structured = issue.actions_structured;
+        let actionsHtml = "";
+        if (structured && Object.values(structured).some(a => (a ?? []).length > 0)) {
+          const catColors: Record<string, string> = { lifestyle: "#1d4ed8", nutrition: "#15803d", clinical: "#b45309" };
+          actionsHtml = `<div style="margin-top:6px;"><strong>Actions:</strong>${(["lifestyle", "nutrition", "clinical"] as const)
+            .map(cat => {
+              const acts = structured[cat] ?? [];
+              if (acts.length === 0) return "";
+              const items = acts.map((a: string) => `<li>${escapeHtml(a)}</li>`).join("");
+              return `<div style="margin-top:4px;"><span style="font-weight:700;color:${catColors[cat]};text-transform:capitalize;">${cat}:</span><ul style="margin:2px 0 0 18px;">${items}</ul></div>`;
+            }).join("")}</div>`;
+        } else {
+          const flatActs = (issue.recommended_actions ?? issue.action ?? []).map((a: string) => `<li>${escapeHtml(a)}</li>`).join("");
+          if (flatActs) actionsHtml = `<div style="margin-top:6px;"><strong>Recommended Actions:</strong><ul style="margin:6px 0 0 18px;">${flatActs}</ul></div>`;
+        }
         const symptomsHtml = (issue.symptoms ?? []).length > 0
           ? `<div style="margin-top:4px;"><strong>Symptoms:</strong> ${escapeHtml((issue.symptoms ?? []).join(" · "))}</div>`
           : "";
         const outcomeHtml = issue.expected_outcome
           ? `<div style="margin-top:4px;color:#166534;"><strong>Expected outcome:</strong> ${escapeHtml(issue.expected_outcome)}</div>`
+          : "";
+        const trendHtml = issue.trend?.interpretation
+          ? `<div style="margin-top:4px;color:#64748b;font-style:italic;font-size:12px;">${escapeHtml(issue.trend.interpretation)}</div>`
           : "";
         return `
           <div style="margin-bottom:14px;padding:10px;border:1px solid #e2e8f0;border-radius:8px;">
@@ -498,8 +519,9 @@ export default function Home() {
             <div style="margin-top:4px;"><strong>Impact:</strong> ${escapeHtml(issue.impact)}</div>
             ${symptomsHtml}
             <div style="margin-top:4px;"><strong>Urgency:</strong> ${escapeHtml(issue.urgency ?? "Medium")} | <strong>Confidence:</strong> ${escapeHtml(issue.confidence ?? "Medium")} | <strong>Score:</strong> ${issue.score}</div>
+            ${trendHtml}
             ${outcomeHtml}
-            <div style="margin-top:6px;"><strong>Recommended Actions:</strong><ul style="margin:6px 0 0 18px;">${actions}</ul></div>
+            ${actionsHtml}
           </div>`;
       })
       .join("");
@@ -797,7 +819,9 @@ export default function Home() {
                         {previous} → {current} {trendSymbol(delta)}
                       </div>
                       <div style={{ color: delta > 0 ? "#166534" : delta < 0 ? "#b91c1c" : "#475569" }}>
-                        {delta === 0 ? "No change" : `${delta > 0 ? "+" : ""}${delta} points`}
+                        {delta === 0
+                          ? "Stable — no change detected"
+                          : `${delta > 0 ? "+" : ""}${delta} points ${delta > 0 ? "— improving" : "— declining"}`}
                       </div>
                     </div>
                   );
@@ -828,6 +852,26 @@ export default function Home() {
                   {item.expected_outcome && (
                     <div style={{ fontSize: 13, color: "#166534", marginBottom: 4 }}>
                       <strong>Expected outcome:</strong> {item.expected_outcome}
+                    </div>
+                  )}
+                  {item.actions_structured && (Object.values(item.actions_structured).some(a => (a ?? []).length > 0)) && (
+                    <div style={{ fontSize: 12, marginTop: 6, marginBottom: 4 }}>
+                      {(["lifestyle", "nutrition", "clinical"] as const).map((cat) => {
+                        const acts = item.actions_structured?.[cat] ?? [];
+                        if (acts.length === 0) return null;
+                        const colors: Record<string, string> = { lifestyle: "#1d4ed8", nutrition: "#15803d", clinical: "#b45309" };
+                        return (
+                          <div key={cat} style={{ marginBottom: 3 }}>
+                            <span style={{ fontWeight: 700, color: colors[cat], textTransform: "capitalize" }}>{cat}: </span>
+                            {acts.join(" · ")}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {item.trend && (
+                    <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4, fontStyle: "italic" }}>
+                      {item.trend.interpretation}
                     </div>
                   )}
                   <div style={{ fontSize: 12, color: "#64748b" }}>

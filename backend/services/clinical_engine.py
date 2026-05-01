@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import pathlib
 from functools import lru_cache
 
@@ -12,13 +13,14 @@ _PRIORITY_RANK = {"Critical": 0, "High": 1, "Moderate": 2, "Low": 3}
 def _load_system_defs() -> dict:
     if not _CONFIG_PATH.exists():
         return {}
-    with _CONFIG_PATH.open(encoding="utf-8") as handle:
+    with _CONFIG_PATH.open(encoding="utf-8-sig") as handle:
         return json.load(handle)
 
 
-def _confidence(n_genes: int | float | None, _median_fc: float | None = None) -> str:
+def _confidence(n_genes: int | float | None, median_fc: float | None = None) -> str:
     genes = int(n_genes or 0)
-    if genes >= 15:
+    fc = abs(float(median_fc)) if median_fc is not None else 0.0
+    if genes >= 15 and fc > 0.5:
         return "High"
     if genes >= 8:
         return "Medium"
@@ -56,6 +58,29 @@ def _reason_for_system(system: str, pathway_rows: list[dict]) -> dict:
     return {"n_genes": total_genes, "median_fc": median_fc}
 
 
+def _trend_status(health_score: float, priority: str, n_genes: int) -> dict:
+    """Return a clinical trend interpretation — not just a raw value."""
+    if priority in {"Critical", "High"}:
+        if n_genes == 0:
+            return {
+                "status": "Flagged — insufficient genomic data to confirm",
+                "interpretation": "Score is low but no matched genes found — validate input data or expand panel",
+            }
+        return {
+            "status": f"Below threshold — intervention required",
+            "interpretation": f"Score of {round(health_score)} with {n_genes} matched genes confirms active pathway disruption",
+        }
+    if priority == "Moderate":
+        return {
+            "status": "Stable but below optimal",
+            "interpretation": "No immediate clinical action required — monitor and maintain corrective measures",
+        }
+    return {
+        "status": "Within optimal range",
+        "interpretation": "No pathway disruption detected — maintain current protocols",
+    }
+
+
 def build_clinical_summary(pathway_rows: list[dict], system_scores: dict[str, int | float]) -> list[dict]:
     defs = _load_system_defs()
     summary: list[dict] = []
@@ -70,7 +95,8 @@ def build_clinical_summary(pathway_rows: list[dict], system_scores: dict[str, in
         reason = _reason_for_system(system, pathway_rows)
         confidence = _confidence(reason.get("n_genes"), reason.get("median_fc"))
         weight = float(definition.get("system_weight", 1.0))
-        priority_score = round((100 - health) * weight, 2)
+        n_genes_factor = math.log(float(reason.get("n_genes") or 0) + 1)
+        priority_score = round((100 - health) * weight * max(n_genes_factor, 0.5), 2)
 
         summary.append(
             {
@@ -82,10 +108,12 @@ def build_clinical_summary(pathway_rows: list[dict], system_scores: dict[str, in
                 "issue": band.get("issue", f"{system} requires clinical attention"),
                 "impact": band.get("issue", f"{system} requires clinical attention"),
                 "symptoms": band.get("symptoms", definition.get("default_symptoms", [])),
-                "actions": band.get("actions", []),
+                "actions": band.get("actions", {"lifestyle": [], "nutrition": [], "clinical": []}),
+                "impact": band.get("impact", ""),
                 "expected_outcome": band.get("expected_outcome", ""),
                 "confidence": confidence,
                 "reason": reason,
+                "trend": _trend_status(health, band.get("priority", "Moderate"), int(reason.get("n_genes") or 0)),
                 "high_is_worse": high_is_worse,
                 "goal": definition.get("focus_goal", f"Improve {system} function"),
                 "severity": band.get("priority", "Moderate"),
@@ -113,10 +141,18 @@ def build_clinical_summary(pathway_rows: list[dict], system_scores: dict[str, in
 
 
 def build_overall_summary(systems: list[dict]) -> str:
-    critical = [s for s in systems if s.get("priority") in {"Critical", "High"}]
-    if not critical:
-        return "All systems are in stable range with no high-priority clinical flags."
-
-    focus = critical[:2]
-    names = " and ".join(s.get("system", "Unknown") for s in focus)
-    return f"{names} systems are underperforming and should be prioritized in the next intervention cycle."
+    critical = [s for s in systems if s.get("priority") == "Critical"]
+    high = [s for s in systems if s.get("priority") == "High"]
+    urgent = critical + high
+    if not urgent:
+        moderate = [s for s in systems if s.get("priority") == "Moderate"]
+        if moderate:
+            names = ", ".join(s["system"] for s in moderate[:2])
+            return f"{names} systems are below optimal — no immediate intervention required, but corrective measures should start now."
+        return "All systems are within optimal range. Maintain current protocols and schedule next assessment in 8 weeks."
+    if critical:
+        names = ", ".join(s["system"] for s in critical[:2])
+        suffix = f" — {', '.join(s['system'] for s in high[:1])} also requires attention." if high else "."
+        return f"{names} require immediate clinical intervention{suffix}"
+    names = " and ".join(s["system"] for s in high[:2])
+    return f"{names} systems are underperforming. Prioritize intervention in the next clinical cycle."

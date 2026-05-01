@@ -7,35 +7,47 @@
     "default_symptoms": ["Fatigue", "Energy crashes", "Low exercise tolerance"],
     "bands": [
       {
-        "min": 0,
-        "max": 34,
-        "priority": "Critical",
+        "min": 0, "max": 34, "priority": "Critical",
         "issue": "Severe cellular energy deficit",
-        "actions": ["CoQ10 200mg/day", "Sleep 8+ hours nightly", "Reduce intense training load", "Optimize protein and micronutrient intake"],
+        "impact": "Mitochondrial output critically suppressed — fatigue, inability to sustain activity",
+        "actions": {
+          "lifestyle": ["Sleep 8+ hours nightly", "Eliminate intense training until score improves"],
+          "nutrition": ["CoQ10 200mg/day", "Increase protein and micronutrient density"],
+          "clinical": ["Check ferritin and B12 levels", "Thyroid panel if fatigue persists"]
+        },
         "expected_outcome": "Energy resilience improves and daily fatigue burden reduces over 6-8 weeks."
       },
       {
-        "min": 35,
-        "max": 49,
-        "priority": "High",
+        "min": 35, "max": 49, "priority": "High",
         "issue": "Reduced cellular energy output",
-        "actions": ["CoQ10 100-200mg/day", "Post-meal 10 minute walks", "Prioritize sleep consistency", "Reduce refined sugar"],
-        "expected_outcome": "More stable daily energy and fewer afternoon crashes in 4-6 weeks."
+        "impact": "Sustained low-grade energy deficit — afternoon crashes, poor training recovery",
+        "actions": {
+          "lifestyle": ["Post-meal 10-minute walks", "Prioritize sleep consistency"],
+          "nutrition": ["CoQ10 100-200mg/day", "Reduce refined sugar and processed carbs"],
+          "clinical": ["Review iron status and cortisol rhythm"]
+        },
+        "expected_outcome": "More stable daily energy and fewer crashes in 4-6 weeks."
       },
       {
-        "min": 50,
-        "max": 64,
-        "priority": "Moderate",
+        "min": 50, "max": 64, "priority": "Moderate",
         "issue": "Sub-optimal energy metabolism",
-        "actions": ["Strength training 3x/week", "Hydration 2L/day", "Increase whole-food carbohydrates around activity"],
+        "impact": "Energy pathways functioning below peak — performance ceiling limited",
+        "actions": {
+          "lifestyle": ["Strength training 3x/week", "Avoid late-night meals"],
+          "nutrition": ["Hydration 2L/day", "Whole-food carbohydrates around activity windows"],
+          "clinical": []
+        },
         "expected_outcome": "Energy score trends toward optimal range with sustained routine."
       },
       {
-        "min": 65,
-        "max": 100,
-        "priority": "Low",
+        "min": 65, "max": 100, "priority": "Low",
         "issue": "Energy system stable",
-        "actions": ["Maintain current nutrition and sleep routine"],
+        "impact": "No active energy pathway disruption detected",
+        "actions": {
+          "lifestyle": ["Maintain current movement and sleep routine"],
+          "nutrition": ["Maintain current nutrition pattern"],
+          "clinical": []
+        },
         "expected_outcome": "Energy stability maintained."
       }
     ]
@@ -48,35 +60,47 @@
     "default_symptoms": ["Joint stiffness", "Persistent soreness", "Poor recovery"],
     "bands": [
       {
-        "min": 0,
-        "max": 34,
-        "priority": "Critical",
+        "min": 0, "max": 34, "priority": "Critical",
         "issue": "Severe inflammatory burden",
-        "actions": ["Omega-3 EPA+DHA 2-4g/day", "Anti-inflammatory meal pattern", "Limit ultra-processed foods", "Prioritize stress reduction and sleep"],
+        "impact": "Systemic inflammatory cascade active — tissue damage risk, recovery severely impaired",
+        "actions": {
+          "lifestyle": ["Prioritize stress reduction and sleep 8+ hours", "Eliminate high-intensity training short-term"],
+          "nutrition": ["Omega-3 EPA+DHA 2-4g/day", "Anti-inflammatory meal pattern", "Eliminate ultra-processed foods"],
+          "clinical": ["Check CRP and IL-6 levels", "Review medication interactions if applicable"]
+        },
         "expected_outcome": "Inflammatory symptom burden decreases and recovery improves over 6-8 weeks."
       },
       {
-        "min": 35,
-        "max": 49,
-        "priority": "High",
+        "min": 35, "max": 49, "priority": "High",
         "issue": "Elevated chronic inflammation",
-        "actions": ["Increase omega-3 intake", "Reduce seed-oil heavy foods", "Increase colorful vegetables", "Consistent sleep schedule"],
-        "expected_outcome": "Inflammation trend improves with lower tissue stress."
+        "impact": "Persistent low-grade inflammation — accelerated tissue wear, fatigue amplification",
+        "actions": {
+          "lifestyle": ["Consistent sleep schedule", "Reduce alcohol intake"],
+          "nutrition": ["Increase omega-3 intake", "Increase colorful vegetables", "Reduce seed-oil heavy foods"],
+          "clinical": ["CRP monitoring recommended"]
+        },
+        "expected_outcome": "Inflammation trend improves with lower tissue stress in 4-6 weeks."
       },
       {
-        "min": 50,
-        "max": 64,
-        "priority": "Moderate",
+        "min": 50, "max": 64, "priority": "Moderate",
         "issue": "Borderline inflammatory load",
-        "actions": ["Maintain anti-inflammatory diet", "Track stress/sleep debt", "Continue movement routine"],
+        "impact": "Inflammation not yet disruptive but trending — left unchecked will escalate",
+        "actions": {
+          "lifestyle": ["Track stress and sleep debt weekly", "Continue movement routine"],
+          "nutrition": ["Maintain anti-inflammatory diet", "Increase fiber intake"],
+          "clinical": []
+        },
         "expected_outcome": "Inflammation remains controlled and symptoms stay manageable."
       },
       {
-        "min": 65,
-        "max": 100,
-        "priority": "Low",
+        "min": 65, "max": 100, "priority": "Low",
         "issue": "Inflammation profile stable",
-        "actions": ["Maintain current routine and periodic monitoring"],
+        "impact": "No significant inflammatory signal detected",
+        "actions": {
+          "lifestyle": ["Maintain current routine"],
+          "nutrition": ["Continue anti-inflammatory dietary baseline"],
+          "clinical": []
+        },
         "expected_outcome": "Inflammatory balance maintained."
       }
     ]
@@ -89,35 +113,47 @@
     "default_symptoms": ["Fatigue", "Headaches", "Toxin sensitivity"],
     "bands": [
       {
-        "min": 0,
-        "max": 34,
-        "priority": "Critical",
+        "min": 0, "max": 34, "priority": "Critical",
         "issue": "Severely reduced detox capacity",
-        "actions": ["NAC 600-1200mg/day", "Hydration 2-2.5L/day", "Cruciferous vegetables daily", "Reduce alcohol and toxin exposure"],
+        "impact": "Phase I/II detox pathways impaired — toxin accumulation driving fatigue and systemic stress",
+        "actions": {
+          "lifestyle": ["Reduce alcohol and toxin exposure immediately", "Sauna or sweat-based detox protocols if tolerated"],
+          "nutrition": ["NAC 600-1200mg/day", "Cruciferous vegetables daily", "Hydration 2-2.5L/day"],
+          "clinical": ["Liver function test (ALT/AST/GGT)", "Glutathione or oxidative stress panel"]
+        },
         "expected_outcome": "Improved detox resilience and lower sensitivity burden over 6-8 weeks."
       },
       {
-        "min": 35,
-        "max": 49,
-        "priority": "High",
+        "min": 35, "max": 49, "priority": "High",
         "issue": "Reduced detox capacity",
-        "actions": ["Increase sulfur-rich foods", "Consider NAC", "Hydration optimization", "Review environmental toxin load"],
+        "impact": "Detox pathways underperforming — suboptimal clearance of metabolic waste",
+        "actions": {
+          "lifestyle": ["Review environmental toxin load", "Prioritize sleep for liver clearance window"],
+          "nutrition": ["Increase sulfur-rich foods", "Consider NAC supplement", "Hydration optimization"],
+          "clinical": ["Liver enzyme check if symptoms persist"]
+        },
         "expected_outcome": "Detox efficiency improves with better tolerance and recovery."
       },
       {
-        "min": 50,
-        "max": 64,
-        "priority": "Moderate",
+        "min": 50, "max": 64, "priority": "Moderate",
         "issue": "Sub-optimal detox support",
-        "actions": ["Maintain hydration and fiber intake", "Continue antioxidant-rich diet"],
+        "impact": "Detox capacity adequate but not optimized — minor bottlenecks in clearance",
+        "actions": {
+          "lifestyle": ["Maintain hydration and fiber intake"],
+          "nutrition": ["Continue antioxidant-rich diet", "Include brassica vegetables 3x/week"],
+          "clinical": []
+        },
         "expected_outcome": "Detox system trends toward stable optimal function."
       },
       {
-        "min": 65,
-        "max": 100,
-        "priority": "Low",
+        "min": 65, "max": 100, "priority": "Low",
         "issue": "Detox system stable",
-        "actions": ["Maintain current detox-supportive habits"],
+        "impact": "No detox pathway disruption detected",
+        "actions": {
+          "lifestyle": ["Maintain current detox-supportive habits"],
+          "nutrition": ["Continue current dietary pattern"],
+          "clinical": []
+        },
         "expected_outcome": "Detox balance maintained."
       }
     ]
@@ -130,35 +166,47 @@
     "default_symptoms": ["Brain fog", "Mood variability", "Poor focus"],
     "bands": [
       {
-        "min": 0,
-        "max": 34,
-        "priority": "Critical",
+        "min": 0, "max": 34, "priority": "Critical",
         "issue": "Severe neurocognitive pathway suppression",
-        "actions": ["Sleep consistency protocol", "Stress load reduction plan", "Omega-3 support", "Reduce stimulant overuse"],
+        "impact": "Neurotransmitter synthesis and signaling critically disrupted — brain fog, mood instability, cognitive failure under load",
+        "actions": {
+          "lifestyle": ["Sleep consistency protocol — fixed wake/sleep times", "Stress load reduction plan", "Reduce stimulant overuse"],
+          "nutrition": ["Omega-3 DHA 1-2g/day", "Increase tryptophan and tyrosine food sources"],
+          "clinical": ["Neurotransmitter metabolite panel", "Check homocysteine and B-vitamin status"]
+        },
         "expected_outcome": "Improved cognitive clarity and stress tolerance over 6-8 weeks."
       },
       {
-        "min": 35,
-        "max": 49,
-        "priority": "High",
+        "min": 35, "max": 49, "priority": "High",
         "issue": "Reduced neurocognitive resilience",
-        "actions": ["Sleep 7-8 hours consistently", "Protein timing across meals", "Daily stress regulation"],
+        "impact": "Cognitive performance under stress impaired — focus fragile, mood dysregulation present",
+        "actions": {
+          "lifestyle": ["Sleep 7-8 hours consistently", "Daily stress regulation practice"],
+          "nutrition": ["Protein timing across meals for neurotransmitter precursors"],
+          "clinical": ["B12 and folate status check"]
+        },
         "expected_outcome": "Better focus and mood stability in 4-6 weeks."
       },
       {
-        "min": 50,
-        "max": 64,
-        "priority": "Moderate",
+        "min": 50, "max": 64, "priority": "Moderate",
         "issue": "Mild cognitive pathway strain",
-        "actions": ["Maintain sleep hygiene", "Aerobic activity 3x/week", "Reduce late caffeine"],
+        "impact": "Cognitive function intact but not optimized — performance fluctuates with stress",
+        "actions": {
+          "lifestyle": ["Maintain sleep hygiene", "Aerobic activity 3x/week", "Reduce late caffeine"],
+          "nutrition": ["Maintain protein and healthy fat intake"],
+          "clinical": []
+        },
         "expected_outcome": "Cognitive performance trends toward stable baseline."
       },
       {
-        "min": 65,
-        "max": 100,
-        "priority": "Low",
+        "min": 65, "max": 100, "priority": "Low",
         "issue": "Brain system stable",
-        "actions": ["Maintain current routine"],
+        "impact": "No cognitive pathway disruption detected",
+        "actions": {
+          "lifestyle": ["Maintain current routine"],
+          "nutrition": ["Maintain brain-supportive nutritional baseline"],
+          "clinical": []
+        },
         "expected_outcome": "Cognitive resilience remains stable."
       }
     ]
@@ -171,35 +219,47 @@
     "default_symptoms": ["Slow recovery", "Persistent soreness", "Poor adaptation"],
     "bands": [
       {
-        "min": 0,
-        "max": 34,
-        "priority": "Critical",
+        "min": 0, "max": 34, "priority": "Critical",
         "issue": "Severely impaired recovery capacity",
-        "actions": ["Reduce training volume", "Protein 1.6-2.0g/kg/day", "Sleep 8+ hours", "Micronutrient optimization"],
+        "impact": "Tissue repair and adaptation mechanisms failing — injury risk elevated, training counterproductive",
+        "actions": {
+          "lifestyle": ["Reduce training volume by 50% immediately", "Sleep 8+ hours — non-negotiable"],
+          "nutrition": ["Protein 1.6-2.0g/kg/day", "Micronutrient optimization — zinc, magnesium, vitamin D"],
+          "clinical": ["Check IGF-1 and cortisol/testosterone ratio", "Review sleep architecture if available"]
+        },
         "expected_outcome": "Recovery burden decreases and adaptation improves over 6-8 weeks."
       },
       {
-        "min": 35,
-        "max": 49,
-        "priority": "High",
+        "min": 35, "max": 49, "priority": "High",
         "issue": "Reduced repair and adaptation",
-        "actions": ["Post-training recovery protocol", "Hydration and electrolyte support", "Sleep regularization"],
-        "expected_outcome": "Improved training recovery and less delayed soreness."
+        "impact": "Recovery window extended — insufficient tissue repair between stress cycles",
+        "actions": {
+          "lifestyle": ["Post-training recovery protocol", "Sleep regularization"],
+          "nutrition": ["Hydration and electrolyte support", "Post-training protein within 30 minutes"],
+          "clinical": ["Vitamin D and magnesium check"]
+        },
+        "expected_outcome": "Improved training recovery and less delayed soreness in 4-6 weeks."
       },
       {
-        "min": 50,
-        "max": 64,
-        "priority": "Moderate",
+        "min": 50, "max": 64, "priority": "Moderate",
         "issue": "Sub-optimal recovery signaling",
-        "actions": ["Maintain protein timing", "Monitor training load/recovery balance"],
+        "impact": "Recovery pathway efficiency below peak — adaptation occurring but suboptimally",
+        "actions": {
+          "lifestyle": ["Monitor training load/recovery balance", "Avoid two consecutive high-load days"],
+          "nutrition": ["Maintain protein timing", "Ensure adequate dietary zinc and magnesium"],
+          "clinical": []
+        },
         "expected_outcome": "Recovery trends toward optimal baseline."
       },
       {
-        "min": 65,
-        "max": 100,
-        "priority": "Low",
+        "min": 65, "max": 100, "priority": "Low",
         "issue": "Recovery system stable",
-        "actions": ["Maintain current recovery habits"],
+        "impact": "No recovery pathway disruption detected",
+        "actions": {
+          "lifestyle": ["Maintain current recovery habits"],
+          "nutrition": ["Maintain current nutritional support"],
+          "clinical": []
+        },
         "expected_outcome": "Recovery stability maintained."
       }
     ]

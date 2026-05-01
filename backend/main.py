@@ -105,16 +105,29 @@ def _aggregate_system_scores(pathway_rows: list[dict]) -> dict[str, int]:
     return systems
 
 
+def _flatten_actions(actions) -> list:
+    """Flatten structured {lifestyle,nutrition,clinical} or pass-through flat list."""
+    if isinstance(actions, dict):
+        flat = []
+        for category in ("lifestyle", "nutrition", "clinical"):
+            flat.extend(actions.get(category) or [])
+        return flat
+    return actions if isinstance(actions, list) else []
+
+
 def _systems_to_insights(clinical_systems: list[dict]) -> list[dict]:
     insights: list[dict] = []
     for item in clinical_systems:
+        raw_actions = item.get("actions", {})
+        flat_actions = _flatten_actions(raw_actions)
         insights.append(
             {
                 "issue": item.get("issue"),
                 "impact": item.get("impact") or item.get("issue"),
                 "symptoms": item.get("symptoms", []),
-                "action": item.get("actions", []),
-                "recommended_actions": item.get("actions", []),
+                "action": flat_actions,
+                "recommended_actions": flat_actions,
+                "actions_structured": raw_actions if isinstance(raw_actions, dict) else {},
                 "expected_outcome": item.get("expected_outcome", ""),
                 "priority": item.get("priority", "Moderate"),
                 "severity": item.get("severity", item.get("priority", "Moderate")),
@@ -126,6 +139,7 @@ def _systems_to_insights(clinical_systems: list[dict]) -> list[dict]:
                 "system": item.get("system"),
                 "score": item.get("score"),
                 "rank": item.get("rank"),
+                "trend": item.get("trend"),
                 "pathway": None,
                 "n_genes": item.get("reason", {}).get("n_genes"),
             }
