@@ -24,6 +24,10 @@ r-service/.Rhistory
 data/*.csv
 data/kegg_cache/
 
+# SQLite dev DB
+*.db
+*.sqlite3
+
 # OS
 .DS_Store
 Thumbs.db

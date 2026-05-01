@@ -43,6 +43,9 @@ type Insight = {
   confidence?: string;
   clinical_label?: string;
   focus_area?: string;
+  goal?: string;
+  symptoms?: string[];
+  expected_outcome?: string;
   recommended_actions?: string[];
   pathway?: string;
   n_genes?: number;
@@ -55,6 +58,9 @@ type FocusArea = {
   reason: string;
   system: string;
   urgency: string;
+  goal?: string;
+  current_score?: number;
+  target_score?: number;
 };
 
 type SystemScores = {
@@ -387,6 +393,7 @@ export default function Home() {
         reason: item.impact,
         system: item.system,
         urgency: item.urgency || (index === 0 ? "High" : "Medium"),
+        goal: item.goal || `Improve ${item.system} score from ${item.score}`,
       }));
 
     if (fromIssues.length > 0) {
@@ -406,6 +413,7 @@ export default function Home() {
       reason: `Current ${system} score is ${score}. Prioritize sleep, nutrition, hydration, and adherence to care plan to improve this domain over the next 30 days.`,
       system,
       urgency: score < 45 ? "High" : "Medium",
+      goal: `Increase ${system} score from ${score} to ${Math.min(75, score + 15)}`,
     }));
   })();
 
@@ -439,18 +447,29 @@ export default function Home() {
     const issueRowsHtml = (result.top_issues ?? [])
       .map((issue, index) => {
         const actions = (issue.recommended_actions ?? issue.action ?? []).map((a) => `<li>${escapeHtml(a)}</li>`).join("");
+        const symptomsHtml = (issue.symptoms ?? []).length > 0
+          ? `<div style="margin-top:4px;"><strong>Symptoms:</strong> ${escapeHtml((issue.symptoms ?? []).join(" · "))}</div>`
+          : "";
+        const outcomeHtml = issue.expected_outcome
+          ? `<div style="margin-top:4px;color:#166534;"><strong>Expected outcome:</strong> ${escapeHtml(issue.expected_outcome)}</div>`
+          : "";
         return `
           <div style="margin-bottom:14px;padding:10px;border:1px solid #e2e8f0;border-radius:8px;">
             <div><strong>#${issue.rank ?? index + 1} ${(issue.severity ?? issue.priority).toUpperCase()}</strong> - ${escapeHtml(issue.clinical_label ?? issue.issue)}</div>
             <div style="margin-top:4px;"><strong>Impact:</strong> ${escapeHtml(issue.impact)}</div>
-            <div style="margin-top:4px;"><strong>Urgency:</strong> ${escapeHtml(issue.urgency ?? "Medium")} | <strong>Confidence:</strong> ${escapeHtml(issue.confidence ?? "N/A")} | <strong>Score:</strong> ${issue.score}</div>
+            ${symptomsHtml}
+            <div style="margin-top:4px;"><strong>Urgency:</strong> ${escapeHtml(issue.urgency ?? "Medium")} | <strong>Confidence:</strong> ${escapeHtml(issue.confidence ?? "Medium")} | <strong>Score:</strong> ${issue.score}</div>
+            ${outcomeHtml}
             <div style="margin-top:6px;"><strong>Recommended Actions:</strong><ul style="margin:6px 0 0 18px;">${actions}</ul></div>
           </div>`;
       })
       .join("");
 
     const focusHtml = (effectiveFocusAreas ?? [])
-      .map((area, index) => `<li><strong>${index + 1}. ${escapeHtml(area.title)}</strong> (${escapeHtml(area.urgency)})<br/>${escapeHtml(area.reason)}</li>`)
+      .map((area, index) => {
+        const goalLine = area.goal ? `<br/><span style="color:#166534;font-weight:600;">🎯 Goal: ${escapeHtml(area.goal)}</span>` : "";
+        return `<li><strong>${index + 1}. ${escapeHtml(area.title)}</strong> (${escapeHtml(area.urgency)})${goalLine}<br/>${escapeHtml(area.reason)}</li>`;
+      })
       .join("");
 
     const monthlyActionsHtml = topActions.length > 0
@@ -727,23 +746,34 @@ export default function Home() {
 
           <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 10, padding: "16px 18px" }}>
             <h2 style={{ marginTop: 0, marginBottom: 12, fontSize: 16 }}>Top 3 Issues</h2>
-            <ul style={{ margin: 0, paddingLeft: 20 }}>
+            <div style={{ display: "grid", gap: 12 }}>
               {result.top_issues.map((item, index) => (
-                <li key={`${item.issue}-${index}`} style={{ marginBottom: 8, fontSize: 14 }}>
-                  <strong style={{ color: priorityColor(item.severity ?? item.priority) }}>
-                    #{item.rank ?? index + 1} {(item.severity ?? item.priority).toUpperCase()}
-                  </strong>
-                  {" "}
-                  {item.clinical_label ?? item.issue}
-                  <div style={{ color: "#334155", marginTop: 4 }}>
-                    Impact: {item.impact}
+                <div key={`${item.issue}-${index}`} style={{ background: "#fff", border: "1px solid #fca5a5", borderRadius: 8, padding: "12px 14px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+                    <span style={{ background: priorityColor(item.severity ?? item.priority), color: "#fff", borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>
+                      #{item.rank ?? index + 1} {(item.severity ?? item.priority).toUpperCase()}
+                    </span>
+                    <strong style={{ fontSize: 14 }}>{item.clinical_label ?? item.issue}</strong>
                   </div>
-                  <div style={{ color: "#475569", marginTop: 2, fontSize: 13 }}>
-                    Urgency: <strong>{item.urgency ?? "Medium"}</strong> · Confidence: <strong>{item.confidence ?? "N/A"}</strong> · Score: <strong>{item.score}</strong>
+                  <div style={{ fontSize: 13, color: "#334155", marginBottom: 4 }}>
+                    <strong>Impact:</strong> {item.impact}
                   </div>
-                </li>
+                  {(item.symptoms ?? []).length > 0 && (
+                    <div style={{ fontSize: 13, color: "#475569", marginBottom: 4 }}>
+                      <strong>Symptoms:</strong> {(item.symptoms ?? []).join(" · ")}
+                    </div>
+                  )}
+                  {item.expected_outcome && (
+                    <div style={{ fontSize: 13, color: "#166534", marginBottom: 4 }}>
+                      <strong>Expected outcome:</strong> {item.expected_outcome}
+                    </div>
+                  )}
+                  <div style={{ fontSize: 12, color: "#64748b" }}>
+                    Urgency: <strong>{item.urgency ?? "Medium"}</strong> · Confidence: <strong>{item.confidence ?? "Medium"}</strong> · Score: <strong>{item.score}</strong>
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
 
           <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "16px 18px" }}>
@@ -751,14 +781,24 @@ export default function Home() {
             {effectiveFocusAreas.length === 0 ? (
               <div style={{ color: "#64748b", fontSize: 14 }}>Focus areas will appear once enough trend/priority data is available.</div>
             ) : (
-              <ol style={{ margin: 0, paddingLeft: 20 }}>
+              <div style={{ display: "grid", gap: 10 }}>
                 {effectiveFocusAreas.map((area, index) => (
-                  <li key={`${area.title}-${index}`} style={{ marginBottom: 8, fontSize: 14 }}>
-                    <strong>{area.title}</strong> ({area.urgency})
-                    <div style={{ color: "#475569", marginTop: 2 }}>{area.reason}</div>
-                  </li>
-                ))}
-              </ol>
+                  <div key={`${area.title}-${index}`} style={{ background: "#fff", border: "1px solid #bbf7d0", borderRadius: 8, padding: "10px 14px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
+                      <span style={{ background: "#15803d", color: "#fff", borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>
+                        {index + 1}. {area.urgency?.toUpperCase() ?? "MEDIUM"}
+                      </span>
+                      <strong style={{ fontSize: 14 }}>{area.title}</strong>
+                    </div>
+                    {area.goal && (
+                      <div style={{ fontSize: 13, color: "#166534", fontWeight: 600, marginBottom: 3 }}>
+                        🎯 Goal: {area.goal}
+                      </div>
+                    )}
+                    <div style={{ fontSize: 13, color: "#475569" }}>{area.reason}</div>
+                  </div>
+                ))}              
+              </div>
             )}
           </div>
 

@@ -1,0 +1,233 @@
+{
+  "Citrate cycle (TCA cycle)": {
+    "system": "Energy",
+    "label": "Cellular Energy Production",
+    "impact": "Core ATP generation cycle is under-active, reducing stamina and post-exertion recovery.",
+    "symptoms": ["Persistent fatigue", "Slow recovery after exercise", "Afternoon energy crashes"],
+    "actions": ["CoQ10 100–200 mg/day", "Magnesium glycinate 200–400 mg/day", "Prioritize sleep 7–9h", "Reduce ultra-processed foods"]
+  },
+  "Oxidative phosphorylation": {
+    "system": "Energy",
+    "label": "Mitochondrial ATP Output",
+    "impact": "Mitochondrial electron transport efficiency is reduced, limiting sustainable energy production.",
+    "symptoms": ["Exercise intolerance", "Fatigue on minimal effort", "Poor sleep quality"],
+    "actions": ["CoQ10 100–200 mg/day", "B-vitamin complex daily", "Progressive resistance training 3×/week", "Limit alcohol"]
+  },
+  "Glycolysis / Gluconeogenesis": {
+    "system": "Energy",
+    "label": "Glucose Utilization",
+    "impact": "Glucose-to-energy conversion is impaired, causing unstable energy levels and brain fog.",
+    "symptoms": ["Energy crashes", "Brain fog after meals", "Light-headedness", "Cravings"],
+    "actions": ["Post-meal walks (10–15 min)", "Prioritize fiber + protein at meals", "Reduce refined carbohydrates", "Consider chromium or berberine under supervision"]
+  },
+  "Fatty acid degradation": {
+    "system": "Energy",
+    "label": "Fat Burning Capacity",
+    "impact": "Capacity to derive energy from fats is reduced, increasing metabolic inflexibility.",
+    "symptoms": ["Hunger between meals", "Slow fat loss", "Afternoon fatigue"],
+    "actions": ["Extend overnight fast to 12h if tolerated", "Reduce snacking frequency", "Include moderate aerobic activity 3×/week"]
+  },
+  "Fatty acid metabolism": {
+    "system": "Energy",
+    "label": "Lipid Energy Metabolism",
+    "impact": "Fat-derived energy efficiency is below threshold, reducing metabolic adaptability.",
+    "symptoms": ["Fatigue", "Weight plateau", "Poor cold tolerance"],
+    "actions": ["CoQ10 100–200 mg/day", "Omega-3 supplementation 2–4g/day", "Increase dietary healthy fats (olive oil, avocado)"]
+  },
+  "Starch and sucrose metabolism": {
+    "system": "Energy",
+    "label": "Carbohydrate Processing",
+    "impact": "Complex carbohydrate digestion and processing pathways show reduced activity.",
+    "symptoms": ["Bloating after carbs", "Post-meal fatigue", "Blood sugar swings"],
+    "actions": ["Minimize simple sugars", "Increase dietary fibre to 25–35g/day", "Digestive enzyme support if indicated"]
+  },
+  "D-Amino acid metabolism": {
+    "system": "Brain",
+    "label": "Neurotransmitter Balance",
+    "impact": "Neurochemical precursor availability is reduced, affecting mood stability and cognitive sharpness.",
+    "symptoms": ["Brain fog", "Mood swings", "Poor stress tolerance", "Low motivation"],
+    "actions": ["Sleep consistency 7–8h", "Protein across all meals", "Reduce caffeine dependency", "Mindfulness or stress management protocol"]
+  },
+  "GABAergic synapse": {
+    "system": "Brain",
+    "label": "Inhibitory Neurotransmission",
+    "impact": "GABA-mediated calming signalling is impaired, increasing anxiety and sleep fragmentation.",
+    "symptoms": ["Anxiety", "Poor sleep onset", "Restlessness", "Difficulty winding down"],
+    "actions": ["Magnesium glycinate 300 mg at bedtime", "Reduce screen exposure 1h before bed", "Limit caffeine after 12pm", "Consider L-theanine 200 mg"]
+  },
+  "Serotonergic synapse": {
+    "system": "Brain",
+    "label": "Mood Regulation Circuitry",
+    "impact": "Serotonin pathway signalling is suboptimal, increasing vulnerability to low mood and appetite dysregulation.",
+    "symptoms": ["Low mood", "Carb cravings", "Irritability", "Emotional flatness"],
+    "actions": ["Tryptophan-rich foods (turkey, eggs, seeds)", "Morning light exposure 10–20 min daily", "Regular moderate exercise", "Consider 5-HTP under supervision"]
+  },
+  "Dopaminergic synapse": {
+    "system": "Brain",
+    "label": "Reward and Drive Circuits",
+    "impact": "Dopaminergic reward signalling is reduced, affecting focus, drive, and motivation.",
+    "symptoms": ["Low motivation", "Poor focus", "Procrastination", "Reward-seeking behaviour"],
+    "actions": ["Tyrosine-rich foods (eggs, chicken, soy)", "Limit social media / dopamine-depleting stimuli", "Cold exposure (cold shower 2–3 min daily)", "Regular goal-setting and achievement cycles"]
+  },
+  "Neurotrophin signaling pathway": {
+    "system": "Brain",
+    "label": "Neuroplasticity and BDNF",
+    "impact": "Neuroplasticity and brain-derived neurotrophic factor pathways are under-supported.",
+    "symptoms": ["Memory issues", "Poor learning consolidation", "Low mood", "Brain fog"],
+    "actions": ["Aerobic exercise 30 min/day", "Omega-3 DHA 1–2g/day", "Social engagement", "Sleep prioritization"]
+  },
+  "Glutamatergic synapse": {
+    "system": "Brain",
+    "label": "Excitatory Neurotransmission",
+    "impact": "Glutamate signalling balance is disrupted, affecting cognitive sharpness and stress response.",
+    "symptoms": ["Overstimulation", "Anxiety", "Poor concentration", "Sensory sensitivity"],
+    "actions": ["Reduce MSG-heavy processed foods", "Magnesium supplementation", "Meditation or breathwork daily", "Evaluate sleep quality"]
+  },
+  "Dopamine metabolism": {
+    "system": "Brain",
+    "label": "Dopamine Synthesis & Clearance",
+    "impact": "Dopamine synthesis or clearance is inefficient, affecting drive and executive function.",
+    "symptoms": ["Low motivation", "Poor concentration", "Fatigue", "Impulsivity"],
+    "actions": ["Iron and B6 adequacy check", "Tyrosine-rich nutrition", "Structured daily routines", "Limit recreational stimulant use"]
+  },
+  "Sulfur metabolism": {
+    "system": "Detox",
+    "label": "Sulfur Detoxification Pathway",
+    "impact": "Sulfur-based detox pathways are under-performing, reducing ability to clear toxins and reactive compounds.",
+    "symptoms": ["Chemical sensitivities", "Fatigue", "Headaches", "Nausea after alcohol"],
+    "actions": ["Sulfur-rich foods daily (eggs, garlic, onion, cruciferous)", "N-Acetylcysteine (NAC) 600 mg/day", "Hydration 2–2.5L/day", "Reduce alcohol load"]
+  },
+  "Glutathione metabolism": {
+    "system": "Detox",
+    "label": "Antioxidant Defence",
+    "impact": "Glutathione-based antioxidant defence is reduced, increasing oxidative stress burden.",
+    "symptoms": ["Fatigue", "Muscle soreness", "Slow wound healing", "Increased illness frequency"],
+    "actions": ["NAC 600–1200 mg/day", "Selenium 100–200 mcg/day", "Reduce oxidative stressors (smoking, alcohol)", "Increase cruciferous vegetable intake"]
+  },
+  "Drug metabolism - cytochrome P450": {
+    "system": "Detox",
+    "label": "Phase I Detoxification",
+    "impact": "Phase I liver detoxification capacity is compromised, slowing metabolic clearance of toxins and medications.",
+    "symptoms": ["Medication sensitivity", "Headaches", "Fatigue", "Nausea"],
+    "actions": ["Limit processed foods and additives", "Adequate protein intake for enzyme synthesis", "Milk thistle (silymarin) 140 mg/day", "Reduce xenobiotic load (pesticides, plastics)"]
+  },
+  "Xenobiotics biodegradation and metabolism": {
+    "system": "Detox",
+    "label": "Environmental Toxin Clearance",
+    "impact": "Capacity to neutralise environmental chemicals and pollutants is below functional threshold.",
+    "symptoms": ["Fatigue after chemical exposure", "Headaches", "Skin breakouts", "Brain fog"],
+    "actions": ["Reduce environmental toxin exposure (organic food, filtered water)", "Increase fibre to support gut transit", "Sauna or heat therapy 2–3×/week", "Cruciferous vegetables daily"]
+  },
+  "Cyanoamino acid metabolism": {
+    "system": "Detox",
+    "label": "Nitrogen Detoxification",
+    "impact": "Nitrogen waste handling pathways are suboptimal, increasing metabolic burden.",
+    "symptoms": ["Brain fog", "Fatigue", "Morning sluggishness"],
+    "actions": ["Adequate hydration", "Liver support (milk thistle, choline)", "Reduce high-purine food load if elevated uric acid"]
+  },
+  "TNF signaling pathway": {
+    "system": "Inflammation",
+    "label": "Inflammatory Signalling Control",
+    "impact": "TNF-driven inflammatory signalling is elevated, increasing systemic inflammatory burden and recovery time.",
+    "symptoms": ["Joint stiffness", "Persistent soreness", "Sleep disruption", "Low-grade fatigue"],
+    "actions": ["Omega-3 EPA+DHA 2–4g/day", "Anti-inflammatory diet (Mediterranean pattern)", "Reduce omega-6 seed oil intake", "Monitor CRP if available"]
+  },
+  "IL-17 signaling pathway": {
+    "system": "Inflammation",
+    "label": "Mucosal Inflammation",
+    "impact": "IL-17 pathway activation suggests elevated mucosal or autoimmune inflammatory activity.",
+    "symptoms": ["Skin flares", "Gut sensitivity", "Joint tenderness", "Respiratory sensitivity"],
+    "actions": ["Elimination of common inflammatory foods (gluten trial, dairy trial)", "Probiotic supplementation", "Stress reduction (cortisol drives IL-17)", "Omega-3 supplementation"]
+  },
+  "NF-kappa B signaling pathway": {
+    "system": "Inflammation",
+    "label": "Core Inflammatory Switch",
+    "impact": "Master inflammatory regulator NF-κB shows elevated activity, amplifying chronic inflammation risk.",
+    "symptoms": ["Generalised fatigue", "Aches and pains", "Poor recovery", "Mood dysregulation"],
+    "actions": ["Curcumin 500–1000 mg/day with piperine", "Stress load reduction", "Sleep optimisation (>7h)", "Omega-3 supplementation"]
+  },
+  "Asthma": {
+    "system": "Inflammation",
+    "label": "Airway Inflammation",
+    "impact": "Respiratory inflammatory pathways are elevated, indicating heightened airway sensitivity.",
+    "symptoms": ["Breathing sensitivity", "Exercise-induced wheeze", "Cough", "Mucus production"],
+    "actions": ["Identify and reduce allergen exposure", "Omega-3 supplementation", "Vitamin D3 2000–4000 IU/day", "Consult clinician regarding airway assessment"]
+  },
+  "Arachidonic acid metabolism": {
+    "system": "Inflammation",
+    "label": "Prostaglandin & Inflammation Cascade",
+    "impact": "Arachidonic acid-driven inflammatory cascade is active, increasing pain sensitivity and tissue inflammation.",
+    "symptoms": ["Joint pain", "Muscle soreness", "Headaches", "Inflammatory skin symptoms"],
+    "actions": ["Reduce omega-6 dietary load", "Increase EPA (fish oil 2–4g/day)", "Resveratrol 250 mg/day", "Curcumin supplementation"]
+  },
+  "PPAR signaling pathway": {
+    "system": "Inflammation",
+    "label": "Anti-Inflammatory Receptor Activity",
+    "impact": "PPAR anti-inflammatory receptor signalling is reduced, impairing the body's ability to dampen inflammation.",
+    "symptoms": ["Metabolic sluggishness", "Inflammatory symptoms", "Weight gain", "Fatigue"],
+    "actions": ["Omega-3 fatty acids 2–4g/day", "Resveratrol supplementation", "Moderate aerobic exercise", "Reduce saturated fat intake"]
+  },
+  "p53 signaling pathway": {
+    "system": "Recovery",
+    "label": "Cellular Repair Signalling",
+    "impact": "Cellular DNA-damage response and repair signalling is suboptimal, reducing tissue maintenance capacity.",
+    "symptoms": ["Slow injury recovery", "Premature ageing signs", "Reduced cellular resilience"],
+    "actions": ["Zinc 15–25 mg/day", "Selenium 100–200 mcg/day", "Reduce oxidative stressors", "Consistent adequate sleep"]
+  },
+  "mTOR signaling pathway": {
+    "system": "Recovery",
+    "label": "Growth and Repair Signalling",
+    "impact": "mTOR-mediated protein synthesis and repair signalling is below threshold, limiting muscle and tissue recovery.",
+    "symptoms": ["Slow muscle recovery", "Plateau in strength gains", "Delayed wound healing"],
+    "actions": ["Leucine-rich protein 1.6–2.2 g/kg/day", "Resistance training 3–4×/week", "Adequate carbohydrate around training", "Consider HMB 3g/day"]
+  },
+  "AMPK signaling pathway": {
+    "system": "Recovery",
+    "label": "Cellular Energy Sensing",
+    "impact": "AMPK energy-sensing and cellular housekeeping is compromised, reducing metabolic flexibility and cell repair.",
+    "symptoms": ["Slow recovery", "Energy instability", "Elevated body fat despite exercise"],
+    "actions": ["Intermittent fasting (12–16h) 3×/week", "Berberine 500 mg/day with food", "Aerobic exercise 30–45 min/day", "Caloric balance optimisation"]
+  },
+  "Autophagy": {
+    "system": "Recovery",
+    "label": "Cellular Recycling & Longevity",
+    "impact": "Cellular autophagy (clean-up) pathways are under-active, allowing accumulation of damaged proteins and organelles.",
+    "symptoms": ["Cognitive declines", "Fatigue", "Inflammation", "Poor recovery"],
+    "actions": ["Intermittent fasting protocol 16:8", "Adequate sleep (8h)", "Spermidine-rich foods (wheatgerm, mushrooms)", "Limit late meals"]
+  },
+  "Longevity regulating pathway": {
+    "system": "Recovery",
+    "label": "Longevity & Resilience Pathways",
+    "impact": "Key longevity-regulating pathways (sirtuins, FOXO) are under-active, accelerating cellular ageing signals.",
+    "symptoms": ["Slower recovery", "Reduced stress tolerance", "Early fatigue onset"],
+    "actions": ["Caloric balance (avoid chronic restriction or excess)", "Resveratrol 250–500 mg/day", "NAD+ precursor (NMN or NR) 250–500 mg/day", "Quality sleep 7–9h"]
+  },
+  "Insulin signaling pathway": {
+    "system": "Energy",
+    "label": "Insulin Sensitivity",
+    "impact": "Insulin signalling efficiency is reduced, increasing risk of blood sugar instability and metabolic syndrome.",
+    "symptoms": ["Post-meal fatigue", "Cravings for sugar", "Energy crashes", "Difficulty losing weight"],
+    "actions": ["Reduce refined carbohydrates", "Post-meal movement (10 min walk)", "Berberine 500 mg with meals", "Strength training 3×/week"]
+  },
+  "AGE-RAGE signaling pathway in diabetic complications": {
+    "system": "Inflammation",
+    "label": "Glycation & Inflammatory Stress",
+    "impact": "Advanced glycation end-products are driving elevated inflammatory burden, increasing vascular and tissue stress.",
+    "symptoms": ["Fatigue", "Skin ageing signs", "Joint stiffness", "Poor wound healing"],
+    "actions": ["Reduce sugar and high-glycaemic carbs", "Increase antioxidants (vitamin C, E)", "AGE-reducing cooking methods (boil vs fry)", "Regular blood glucose monitoring"]
+  },
+  "Prostate cancer": {
+    "system": "Inflammation",
+    "label": "Androgen-Driven Proliferative Signalling",
+    "impact": "Androgen receptor and proliferative signalling pathways show elevated activity.",
+    "symptoms": ["Hormonal imbalance", "Fatigue", "Libido changes", "Mood shifts"],
+    "actions": ["Clinician referral for hormonal assessment", "Lycopen-rich foods (tomato, watermelon)", "Reduce anabolic stressors", "Maintain healthy BMI"]
+  },
+  "Aquaporin-mediated transport": {
+    "system": "Recovery",
+    "label": "Cellular Hydration & Transport",
+    "impact": "Water and mineral transport efficiency across cell membranes is compromised.",
+    "symptoms": ["Fluid retention", "Oedema", "Dry skin", "Electrolyte irregularities"],
+    "actions": ["Hydration 2–2.5L/day minimum", "Electrolyte balance (sodium, potassium, magnesium)", "Reduce diuretics where possible"]
+  }
+}

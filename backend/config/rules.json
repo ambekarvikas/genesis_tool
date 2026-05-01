@@ -1,0 +1,258 @@
+[
+  {
+    "system": "Energy",
+    "condition": "score < 35",
+    "priority": "Critical",
+    "issue": "Severe mitochondrial dysfunction",
+    "impact": "ATP production is critically low. Persistent fatigue, physical and cognitive impairment are likely.",
+    "symptoms": ["Extreme exhaustion", "Post-exertional malaise", "Cognitive impairment", "Exercise intolerance"],
+    "actions": [
+      "Urgent clinician review for underlying mitochondrial or thyroid disorder",
+      "CoQ10 200–300 mg/day with meals",
+      "B-vitamin complex (B1, B2, B3, B5) daily",
+      "Strict sleep schedule 8–9h",
+      "Eliminate alcohol and ultra-processed foods"
+    ],
+    "expected_outcome": "Measurable improvement in Energy score toward 50+ within 8–12 weeks with consistent protocol.",
+    "target_score": 50
+  },
+  {
+    "system": "Energy",
+    "condition": "score >= 35 and score < 50",
+    "priority": "High",
+    "issue": "Reduced cellular energy output",
+    "impact": "Cellular energy production is below threshold, reducing stamina and slowing physical recovery.",
+    "symptoms": ["Persistent fatigue", "Post-exertion slowness", "Afternoon energy crashes", "Slow gym recovery"],
+    "actions": [
+      "CoQ10 100–200 mg/day",
+      "Magnesium glycinate 200–400 mg/day",
+      "Progressive resistance training 3×/week",
+      "Prioritize sleep 7–9h",
+      "Post-meal walk 10–15 min after main meals"
+    ],
+    "expected_outcome": "Energy score should improve toward 55–60 within 6–8 weeks with consistent adherence.",
+    "target_score": 58
+  },
+  {
+    "system": "Energy",
+    "condition": "score >= 50 and score < 60",
+    "priority": "Moderate",
+    "issue": "Sub-optimal energy metabolism",
+    "impact": "Energy pathways are functioning but not at full capacity, limiting peak performance.",
+    "symptoms": ["Mild fatigue variability", "Energy dips mid-afternoon", "Slower-than-expected recovery"],
+    "actions": [
+      "Review sleep quality and consistency",
+      "CoQ10 100 mg/day if not already taking",
+      "Increase complex carbohydrate timing around activity",
+      "Reduce refined sugar intake"
+    ],
+    "expected_outcome": "Energy score stable at 60+ achievable within 4–6 weeks with lifestyle adjustments.",
+    "target_score": 65
+  },
+  {
+    "system": "Inflammation",
+    "condition": "score > 75",
+    "priority": "Critical",
+    "issue": "Severe chronic inflammatory burden",
+    "impact": "Inflammatory signalling is critically elevated. Ongoing tissue damage and accelerated recovery impairment likely.",
+    "symptoms": ["Generalised pain", "Extreme fatigue", "Cognitive fog", "Joint swelling or stiffness", "Disturbed sleep"],
+    "actions": [
+      "Urgent clinician review for autoimmune or chronic inflammatory condition",
+      "Omega-3 EPA+DHA 4g/day",
+      "Eliminate inflammatory dietary triggers (refined sugar, seed oils, processed foods)",
+      "Curcumin + piperine 1000 mg/day",
+      "Stress management protocol: daily relaxation practice"
+    ],
+    "expected_outcome": "Inflammation score reduction toward <65 expected within 8–12 weeks with strict protocol.",
+    "target_score": 65
+  },
+  {
+    "system": "Inflammation",
+    "condition": "score >= 65 and score <= 75",
+    "priority": "High",
+    "issue": "Elevated inflammatory load",
+    "impact": "Persistent inflammatory signalling is increasing tissue stress and delaying recovery.",
+    "symptoms": ["Aching joints", "Fatigue", "Morning stiffness", "Elevated CRP if tested", "Skin reactions"],
+    "actions": [
+      "Omega-3 EPA+DHA 2–4g/day",
+      "Anti-inflammatory diet (Mediterranean pattern)",
+      "Curcumin 500 mg/day with black pepper",
+      "Reduce omega-6 seed oil intake (sunflower, soy)",
+      "Sleep optimisation (>7h)"
+    ],
+    "expected_outcome": "Inflammation score should reduce toward 55–60 within 6–8 weeks.",
+    "target_score": 57
+  },
+  {
+    "system": "Inflammation",
+    "condition": "score >= 55 and score < 65",
+    "priority": "Moderate",
+    "issue": "Borderline elevated inflammation",
+    "impact": "Low-grade inflammation may be silently increasing recovery time and energy consumption.",
+    "symptoms": ["Mild fatigue", "Occasional aches", "Slow recovery after illness"],
+    "actions": [
+      "Increase colorful vegetables (5+ servings daily)",
+      "Omega-3 supplementation 1–2g/day",
+      "Reduce ultra-processed food consumption",
+      "Ensure adequate sleep (7–8h)"
+    ],
+    "expected_outcome": "Bringing Inflammation to below 55 achievable within 4–6 weeks with diet changes.",
+    "target_score": 52
+  },
+  {
+    "system": "Detox",
+    "condition": "score < 35",
+    "priority": "Critical",
+    "issue": "Critical detoxification failure",
+    "impact": "Detox pathways are severely impaired. Toxin accumulation, oxidative overload and systemic burden are highly likely.",
+    "symptoms": ["Chemical hypersensitivity", "Severe fatigue", "Nausea", "Headaches", "Skin rashes", "Brain fog"],
+    "actions": [
+      "Urgent clinician review for hepatic or detox pathway assessment",
+      "NAC 1200 mg/day (split doses)",
+      "Glutathione precursor support (alpha-lipoic acid 300–600 mg/day)",
+      "Eliminate alcohol and hepatotoxic substances immediately",
+      "Cruciferous vegetables daily (broccoli, kale, Brussel sprouts)",
+      "Filtered water 2.5L/day"
+    ],
+    "expected_outcome": "Detox score improvement toward 45+ expected within 8–12 weeks with strict protocol.",
+    "target_score": 45
+  },
+  {
+    "system": "Detox",
+    "condition": "score >= 35 and score < 50",
+    "priority": "High",
+    "issue": "Impaired detoxification pathways",
+    "impact": "Detox efficiency is below threshold, increasing the risk of sluggish metabolic clearance and oxidative stress.",
+    "symptoms": ["Fatigue", "Headaches", "Chemical sensitivities", "Nausea after alcohol or medications", "Skin congestion"],
+    "actions": [
+      "NAC 600 mg/day",
+      "Cruciferous vegetables daily",
+      "Hydration 2–2.5L/day",
+      "Milk thistle (silymarin) 140 mg/day",
+      "Reduce alcohol and environmental toxin load",
+      "Review medications for hepatic load with clinician"
+    ],
+    "expected_outcome": "Detox score should reach 55+ within 6–8 weeks with consistent adherence.",
+    "target_score": 57
+  },
+  {
+    "system": "Detox",
+    "condition": "score >= 50 and score < 60",
+    "priority": "Moderate",
+    "issue": "Sub-optimal detox capacity",
+    "impact": "Detox capacity is functional but not optimal, slightly increasing systemic toxin clearance time.",
+    "symptoms": ["Mild fatigue", "Slow recovery from alcohol or illness", "Skin issues"],
+    "actions": [
+      "NAC 600 mg/day",
+      "Increase anti-oxidant-rich foods",
+      "Reduce processed food and alcohol",
+      "Adequate hydration"
+    ],
+    "expected_outcome": "Detox score reaching 65 achievable within 4–6 weeks with lifestyle corrections.",
+    "target_score": 65
+  },
+  {
+    "system": "Brain",
+    "condition": "score < 35",
+    "priority": "Critical",
+    "issue": "Severe neurological pathway suppression",
+    "impact": "Neurotransmission and cognitive resilience pathways are critically reduced. Persistent brain fog, mood disruption and stress dysregulation expected.",
+    "symptoms": ["Severe brain fog", "Memory impairment", "Mood instability", "High anxiety", "Poor stress resilience", "Sleep disorder"],
+    "actions": [
+      "Clinician referral for neurological or psychiatric evaluation",
+      "Omega-3 DHA 2g/day",
+      "Magnesium glycinate 400 mg at bedtime",
+      "Eliminate alcohol, caffeine excess, stimulants",
+      "Sleep hygiene protocol (fixed wake time, dark room)",
+      "Daily stress management (20 min meditation or breathwork)"
+    ],
+    "expected_outcome": "Brain score improvement toward 45+ expected within 8–12 weeks with consistent protocol.",
+    "target_score": 45
+  },
+  {
+    "system": "Brain",
+    "condition": "score >= 35 and score < 50",
+    "priority": "High",
+    "issue": "Neurological pathway under-performance",
+    "impact": "Key neurotransmitter synthesis and signalling pathways are under-performing, affecting cognitive function and mood.",
+    "symptoms": ["Brain fog", "Low motivation", "Mood swings", "Anxiety", "Poor sleep onset", "Low stress tolerance"],
+    "actions": [
+      "Omega-3 DHA 1–2g/day",
+      "Magnesium glycinate 300 mg at bedtime",
+      "Sleep consistency protocol (same wake time daily)",
+      "Reduce caffeine to <200 mg/day",
+      "Daily walk or aerobic exercise (BDNF stimulation)",
+      "Consider L-theanine 200 mg or ashwagandha 300–600 mg under supervision"
+    ],
+    "expected_outcome": "Brain score should improve toward 55 within 6–8 weeks.",
+    "target_score": 55
+  },
+  {
+    "system": "Brain",
+    "condition": "score >= 50 and score < 60",
+    "priority": "Moderate",
+    "issue": "Mild cognitive pathway inefficiency",
+    "impact": "Cognitive performance and mood regulation are functioning but less than optimal.",
+    "symptoms": ["Occasional brain fog", "Mild stress sensitivity", "Concentration variability"],
+    "actions": [
+      "Omega-3 DHA 1g/day",
+      "Sleep consistency — avoid irregular bedtimes",
+      "Daily aerobic exercise 20–30 min",
+      "Reduce social media and screen time before bed"
+    ],
+    "expected_outcome": "Brain score reaching 65 achievable within 4–6 weeks.",
+    "target_score": 65
+  },
+  {
+    "system": "Recovery",
+    "condition": "score < 35",
+    "priority": "Critical",
+    "issue": "Severe recovery pathway deficit",
+    "impact": "Tissue repair, hormonal balance and cellular regeneration are critically impaired.",
+    "symptoms": ["Extreme soreness after minimal activity", "Injury recurrence", "Hormonal disruption signs", "Chronic fatigue", "Mood instability"],
+    "actions": [
+      "Clinician review for hormonal panel (cortisol, testosterone, thyroid)",
+      "Protein intake 1.8–2.2 g/kg/day",
+      "Sleep priority — 8–9h",
+      "Reduce training load by 40–50% temporarily",
+      "Zinc 25 mg/day",
+      "Vitamin D3 3000–5000 IU/day"
+    ],
+    "expected_outcome": "Recovery score improvement toward 45+ expected within 8–12 weeks.",
+    "target_score": 45
+  },
+  {
+    "system": "Recovery",
+    "condition": "score >= 35 and score < 50",
+    "priority": "High",
+    "issue": "Impaired recovery and repair capacity",
+    "impact": "Repair, adaptation and hormonal recovery pathways are below threshold, slowing training adaptation and increasing injury risk.",
+    "symptoms": ["Slow muscle recovery", "Elevated DOMS", "Hormonal fatigue", "Sleep fragmentation", "Reduced libido"],
+    "actions": [
+      "Protein intake 1.6–2.0 g/kg/day",
+      "Sleep 7–9h with consistent schedule",
+      "Vitamin D3 2000–4000 IU/day",
+      "Zinc 15–25 mg/day",
+      "HMB 3g/day if active athlete",
+      "Cold/heat contrast therapy 2×/week"
+    ],
+    "expected_outcome": "Recovery score should improve toward 55 within 6–8 weeks.",
+    "target_score": 55
+  },
+  {
+    "system": "Recovery",
+    "condition": "score >= 50 and score < 60",
+    "priority": "Moderate",
+    "issue": "Sub-optimal recovery signalling",
+    "impact": "Recovery systems are operational but below peak, moderately increasing recovery time between sessions.",
+    "symptoms": ["Mild DOMS", "Inconsistent sleep quality", "Moderate stress sensitivity"],
+    "actions": [
+      "Ensure protein spread across all meals",
+      "Sleep consistency — same bedtime and wake time",
+      "Vitamin D3 1000–2000 IU/day",
+      "Post-training nutrition within 45 min"
+    ],
+    "expected_outcome": "Recovery score of 65 achievable within 4–6 weeks.",
+    "target_score": 65
+  }
+]
