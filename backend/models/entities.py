@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from db.database import Base
@@ -82,3 +82,15 @@ class Insight(Base):
     impact: Mapped[str] = mapped_column(Text)
     action_json: Mapped[str] = mapped_column(Text)
     priority: Mapped[str] = mapped_column(String(16), index=True)
+
+
+class Intervention(Base):
+    __tablename__ = "interventions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
+    report_id: Mapped[int] = mapped_column(ForeignKey("reports.id"), nullable=True)
+    system: Mapped[str] = mapped_column(String(64), index=True)
+    interventions: Mapped[dict] = mapped_column(JSON)
+    adherence: Mapped[str] = mapped_column(String(20), default="unknown")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)

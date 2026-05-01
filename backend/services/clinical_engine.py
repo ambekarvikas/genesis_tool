@@ -100,6 +100,63 @@ def _trend_status(health_score: float, priority: str, n_genes: int) -> dict:
     }
 
 
+def _detect_system_interactions(system_scores: dict[str, int | float]) -> dict:
+    """
+    Detect system interdependencies and return interaction notes.
+
+    Example:
+        If Detox < 40 and Inflammation > 60:
+        prioritize Detox first (upstream issue causing inflammation)
+    """
+    interactions = {
+        "priority_shift": None,
+        "reasoning": None,
+        "interdependencies": [],
+    }
+
+    detox_score = system_scores.get("Detox", 60)
+    inflammation_score = system_scores.get("Inflammation", 50)
+    brain_score = system_scores.get("Brain", 50)
+    energy_score = system_scores.get("Energy", 50)
+
+    if detox_score < 40 and inflammation_score > 60:
+        interactions["priority_shift"] = "Prioritize Detox pathway first — impaired detoxification drives systemic inflammation"
+        interactions["reasoning"] = "Detox is a prerequisite for resolving secondary inflammation"
+        interactions["interdependencies"].append(("Detox", "Inflammation"))
+
+    if detox_score < 40 and brain_score < 50:
+        interactions["interdependencies"].append(("Detox", "Brain"))
+        if not interactions["priority_shift"]:
+            interactions["priority_shift"] = "Detoxification supports neurological recovery — address in parallel"
+
+    if energy_score < 40 and system_scores.get("Recovery", 50) < 45:
+        interactions["priority_shift"] = "Restore Energy reserves to support Recovery protocol — sequential intervention"
+        interactions["reasoning"] = "Insufficient energy impairs tissue regeneration and adaptation"
+        interactions["interdependencies"].append(("Energy", "Recovery"))
+
+    return interactions if interactions["interdependencies"] or interactions["priority_shift"] else {}
+
+
+def boost_confidence_from_history(
+    system: str,
+    report_history: list[dict] | None = None,
+    base_confidence: str = "Medium",
+) -> str:
+    """Boost confidence when the same system issue repeats across reports."""
+    if not report_history:
+        return base_confidence
+
+    matching_reports = [
+        r for r in report_history
+        if r.get("system") == system and r.get("priority") in ["Critical", "High"]
+    ]
+    if len(matching_reports) >= 2:
+        return "High"
+    if len(matching_reports) == 1 and base_confidence == "Low":
+        return "Medium"
+    return base_confidence
+
+
 def build_clinical_summary(pathway_rows: list[dict], system_scores: dict[str, int | float]) -> list[dict]:
     defs = _load_system_defs()
     summary: list[dict] = []
@@ -160,6 +217,35 @@ def build_clinical_summary(pathway_rows: list[dict], system_scores: dict[str, in
         item["rank"] = idx
 
     return summary
+
+
+def build_clinical_summary_with_interactions(
+    pathway_rows: list[dict],
+    system_scores: dict[str, int | float],
+    patient_history: list[dict] | None = None,
+) -> tuple[list[dict], dict, list[str]]:
+    """Build clinical summary with system interactions and reality check flags."""
+    summary = build_clinical_summary(pathway_rows, system_scores)
+    interactions = _detect_system_interactions(system_scores)
+
+    flags = []
+    low_confidence_systems = [s for s in summary if s.get("confidence") == "Low"]
+    if low_confidence_systems:
+        systems_list = ", ".join(s["system"] for s in low_confidence_systems[:2])
+        flags.append(
+            f"Low confidence — {systems_list} would benefit from lab biomarker validation (liver enzymes, inflammatory markers)"
+        )
+
+    no_gene_match = [s for s in summary if (s.get("reason", {}).get("n_genes") or 0) == 0]
+    if no_gene_match:
+        systems_list = ", ".join(s["system"] for s in no_gene_match[:2])
+        flags.append(f"No gene matches — {systems_list} based on interpretation; expand gene panel or adjust thresholds")
+
+    multiple_failures = any(s.get("priority") == "Critical" for s in summary) and len(summary) > 2
+    if multiple_failures:
+        flags.append("Multiple critical systems — prioritize sequentially; address foundational issues (Detox/Inflammation) first")
+
+    return summary, interactions, flags
 
 
 def build_overall_summary(systems: list[dict]) -> str:

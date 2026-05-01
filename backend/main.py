@@ -7,18 +7,42 @@ from typing import Annotated
 from fastapi import FastAPI, UploadFile, HTTPException, Depends, Form
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from services.scoring import calculate_scores
 from services.r_integration import generate_pathway
 from services.mapping import enrich_pathways
-from services.clinical_engine import build_clinical_summary, build_overall_summary
+from services.clinical_engine import build_clinical_summary_with_interactions, boost_confidence_from_history
 from services.decision_engine import build_decision_output, get_top_issues
 from services.trends import interpret_trend, build_summary as build_trend_summary
 from db.database import Base, engine, get_db, SessionLocal
-from models.entities import Patient, Report, Score, Pathway, PathwayScore, Insight
+from models.entities import Patient, Report, Score, Pathway, PathwayScore, Insight, Intervention
+from services.outcome_validation import (
+    validate_outcome,
+    get_intervention_history,
+    assess_intervention_effectiveness,
+    build_adaptive_recommendation,
+)
 
 app = FastAPI()
+
+
+class InterventionCreate(BaseModel):
+    patient_id: int
+    system: str
+    interventions: list[str]
+    adherence: str = "unknown"
+    report_id: int | None = None
+
+
+class OutcomeValidationRequest(BaseModel):
+    patient_id: int
+    system: str
+    previous_score: float
+    current_score: float
+    expected_min: float = 5.0
+    expected_max: float = 25.0
 
 SYSTEM_BY_CATEGORY = {
     "CARBOHYDRATES": "Energy",
@@ -310,33 +334,62 @@ async def analyze(
 
     categories = _group_by_category(pathway_rows)
     system_scores = _aggregate_system_scores(pathway_rows)
-    clinical_systems = build_clinical_summary(pathway_rows, system_scores)
-    insights = _systems_to_insights(clinical_systems)
-    top_issues = insights[:3]
-    focus_areas = _build_focus_areas(clinical_systems, system_scores)
+    clinical_systems, system_interactions, reality_check_flags = build_clinical_summary_with_interactions(
+        pathway_rows,
+        system_scores,
+    )
 
-    # Decision engine — ranked system list with priority scores
-    system_reasons = {s.get("system"): s.get("reason", {}) for s in clinical_systems}
-    decision_ranked = build_decision_output(system_scores, system_reasons)
-
-    # Trend interpretation per system (requires prior history)
     prior_reports = (
         db.query(Report)
         .filter(Report.patient_id == patient_id)
         .order_by(Report.created_at.desc())
-        .limit(2)
+        .limit(5)
         .all()
     )
     prior_scores: dict[str, int] | None = None
-    if len(prior_reports) >= 1:
+    prior_history: list[dict] = []
+    if prior_reports:
         prior_score_rows = db.query(Score).filter(Score.report_id == prior_reports[0].id).all()
         prior_scores = {r.system: round(r.score) for r in prior_score_rows}
+        for prior_report in prior_reports:
+            score_rows = db.query(Score).filter(Score.report_id == prior_report.id).all()
+            for score_row in score_rows:
+                prior_history.append(
+                    {
+                        "system": score_row.system,
+                        "priority": "High" if score_row.score < 50 else "Low",
+                        "created_at": prior_report.created_at.isoformat(),
+                    }
+                )
 
+    for item in clinical_systems:
+        system = item.get("system")
+        item["confidence"] = boost_confidence_from_history(system, prior_history, item.get("confidence", "Medium"))
+        effectiveness = assess_intervention_effectiveness(db, patient_id, system)
+        item["intervention_effectiveness"] = effectiveness
+        item["adaptive_recommendation"] = build_adaptive_recommendation(
+            system,
+            float(item.get("score") or 0),
+            0.75,
+            effectiveness,
+            system_interactions,
+        )
+        if item.get("confidence") == "Low":
+            item["risk_flag"] = "Low confidence — validate with lab biomarkers"
+        elif effectiveness.get("recommendation") == "escalate":
+            item["risk_flag"] = "Previous protocol underperformed — validate progression with biomarkers and clinical review"
+        else:
+            item["risk_flag"] = None
+
+    insights = _systems_to_insights(clinical_systems)
+    top_issues = insights[:3]
+    focus_areas = _build_focus_areas(clinical_systems, system_scores)
+    system_reasons = {s.get("system"): s.get("reason", {}) for s in clinical_systems}
+    decision_ranked = build_decision_output(system_scores, system_reasons)
     trends = {
         system: interpret_trend(prior_scores.get(system) if prior_scores else None, score)
         for system, score in system_scores.items()
     }
-
     summary = {
         "overall": build_trend_summary(system_scores),
         "top_issues": [
@@ -345,6 +398,7 @@ async def analyze(
                 "issue": row.get("issue"),
                 "priority": row.get("priority"),
                 "score": row.get("score"),
+                "risk_flag": row.get("risk_flag"),
             }
             for row in clinical_systems[:3]
         ],
@@ -359,27 +413,113 @@ async def analyze(
     )
 
     return {
-        "patient_id":    patient_id,
-        "report_id":     report.id,
-        "created_at":    report.created_at.isoformat(),
-        "summary":       summary,
-        "systems":       clinical_systems,
+        "patient_id": patient_id,
+        "report_id": report.id,
+        "created_at": report.created_at.isoformat(),
+        "summary": summary,
+        "systems": clinical_systems,
         "system_scores": system_scores,
-        "top_issues":    top_issues,
-        "decision":      decision_ranked,
-        "trends":        trends,
-        "insights":      insights,
-        "focus_areas":   focus_areas,
-        "pathways":      pathway_rows,
+        "top_issues": top_issues,
+        "decision": decision_ranked,
+        "trends": trends,
+        "insights": insights,
+        "focus_areas": focus_areas,
+        "system_interactions": system_interactions,
+        "reality_check_flags": reality_check_flags,
+        "pathways": pathway_rows,
         "pathway_genes": pathway.get("gene_details", {}),
         "pathway": {
-            "status":   pathway.get("status"),
-            "runner":   pathway.get("runner"),
+            "status": pathway.get("status"),
+            "runner": pathway.get("runner"),
             "categories": categories,
         },
         "scores": {
             "source_column": base_scores.get("source_column"),
-            "rows_total":    base_scores.get("rows_total"),
-            "rows_used":     base_scores.get("rows_used"),
+            "rows_total": base_scores.get("rows_total"),
+            "rows_used": base_scores.get("rows_used"),
         },
+    }
+
+
+@app.post("/interventions")
+def record_intervention(
+    payload: InterventionCreate,
+    db: Annotated[Session, Depends(get_db)],
+):
+    """Record a clinical intervention and track adherence."""
+    patient = db.query(Patient).filter(Patient.id == payload.patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail=f"Patient {payload.patient_id} not found")
+
+    intervention = Intervention(
+        patient_id=payload.patient_id,
+        report_id=payload.report_id,
+        system=payload.system,
+        interventions=payload.interventions,
+        adherence=payload.adherence,
+    )
+    db.add(intervention)
+    db.commit()
+    db.refresh(intervention)
+
+    return {
+        "intervention_id": intervention.id,
+        "patient_id": intervention.patient_id,
+        "system": intervention.system,
+        "interventions": intervention.interventions,
+        "adherence": intervention.adherence,
+        "created_at": intervention.created_at.isoformat(),
+    }
+
+@app.get("/patient/{patient_id}/interventions/{system}")
+def get_system_interventions(
+    patient_id: int,
+    system: str,
+    db: Annotated[Session, Depends(get_db)],
+    limit: int = 10,
+):
+    """Get intervention history and effectiveness for a patient system."""
+    history = get_intervention_history(db, patient_id, system, limit)
+    effectiveness = assess_intervention_effectiveness(db, patient_id, system)
+
+    return {
+        "patient_id": patient_id,
+        "system": system,
+        "history": [
+            {
+                "created_at": h["created_at"].isoformat(),
+                "interventions": h["interventions"],
+                "adherence": h["adherence"],
+                "outcome_delta": h["outcome_delta"],
+            }
+            for h in history
+        ],
+        "effectiveness": effectiveness,
+    }
+
+@app.post("/validate-outcome")
+def validate_clinical_outcome(
+    payload: OutcomeValidationRequest,
+    db: Annotated[Session, Depends(get_db)],
+):
+    """Validate whether observed clinical change matched the expected range."""
+    outcome = validate_outcome(
+        payload.previous_score,
+        payload.current_score,
+        {"min": payload.expected_min, "max": payload.expected_max},
+    )
+
+    effectiveness = assess_intervention_effectiveness(db, payload.patient_id, payload.system)
+    adaptive_rec = build_adaptive_recommendation(
+        payload.system,
+        payload.current_score,
+        0.75,
+        effectiveness,
+    )
+
+    return {
+        **outcome,
+        "effectiveness": effectiveness,
+        "adaptive_recommendation": adaptive_rec,
+        "risk_flag": "Low confidence — validate with lab biomarkers" if outcome.get("status") == "below" else None,
     }
