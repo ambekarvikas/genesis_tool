@@ -29,6 +29,7 @@ from services.evidence_engine import (
     get_evidence_priority_modifier,
     refresh_protocol_performance,
 )
+from services.comparison_engine import compare_reports as _compare_reports, comparison_summary
 
 app = FastAPI()
 
@@ -38,7 +39,19 @@ class InterventionCreate(BaseModel):
     system: str
     interventions: list[str]
     adherence: str = "unknown"
+    notes: str | None = None
     report_id: int | None = None
+
+
+class PatientCreate(BaseModel):
+    name: str
+    age: int = 0
+    gender: str = "Unknown"
+
+
+class ReportLabelUpdate(BaseModel):
+    report_type: str  # 'baseline' | 'followup'
+    label: str | None = None
 
 
 class OutcomeValidationRequest(BaseModel):
@@ -221,8 +234,10 @@ def _persist_report(
     systems: dict[str, int],
     pathways: list[dict],
     insights: list[dict],
+    report_type: str = "followup",
+    label: str | None = None,
 ) -> Report:
-    report = Report(patient_id=patient_id)
+    report = Report(patient_id=patient_id, report_type=report_type, label=label)
     db.add(report)
     db.flush()
     for system, value in systems.items():
@@ -308,6 +323,8 @@ async def analyze(
     db: Annotated[Session, Depends(get_db)],
     patient_id: Annotated[int, Form(...)],
     file: UploadFile | None = None,
+    report_type: Annotated[str, Form()] = "followup",
+    label: Annotated[str | None, Form()] = None,
 ):
     if file is None:
         raise HTTPException(status_code=400, detail="File is required")
@@ -458,11 +475,15 @@ async def analyze(
         systems=system_scores,
         pathways=pathway_rows,
         insights=insights,
+        report_type=report_type,
+        label=label,
     )
 
     return {
         "patient_id": patient_id,
         "report_id": report.id,
+        "report_type": report.report_type,
+        "label": report.label,
         "created_at": report.created_at.isoformat(),
         "summary": summary,
         "systems": clinical_systems,
@@ -542,6 +563,7 @@ def record_intervention(
         system=payload.system,
         interventions=payload.interventions,
         adherence=payload.adherence,
+        notes=payload.notes,
     )
     db.add(intervention)
     db.commit()
@@ -608,3 +630,182 @@ def validate_clinical_outcome(
         "adaptive_recommendation": adaptive_rec,
         "risk_flag": "Low confidence — validate with lab biomarkers" if outcome.get("status") == "below" else None,
     }
+
+
+# ── Patient management ────────────────────────────────────────────────────────
+
+@app.post("/patients", status_code=201)
+def create_patient(
+    payload: PatientCreate,
+    db: Annotated[Session, Depends(get_db)],
+):
+    """Create a new patient record."""
+    patient = Patient(name=payload.name, age=payload.age, gender=payload.gender)
+    db.add(patient)
+    db.commit()
+    db.refresh(patient)
+    return {"id": patient.id, "name": patient.name, "age": patient.age, "gender": patient.gender}
+
+
+@app.get("/patient/{patient_id}/reports")
+def list_patient_reports(
+    patient_id: int,
+    db: Annotated[Session, Depends(get_db)],
+):
+    """List all reports for a patient, newest first, with system scores."""
+    patient = db.query(Patient).filter(Patient.id == patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+    reports = (
+        db.query(Report)
+        .filter(Report.patient_id == patient_id)
+        .order_by(Report.created_at.desc())
+        .all()
+    )
+    result = []
+    for r in reports:
+        scores = db.query(Score).filter(Score.report_id == r.id).all()
+        result.append(
+            {
+                "id": r.id,
+                "report_type": r.report_type,
+                "label": r.label,
+                "created_at": r.created_at.isoformat(),
+                "system_scores": {s.system: round(s.score) for s in scores},
+            }
+        )
+    return {"patient_id": patient_id, "reports": result}
+
+
+@app.patch("/reports/{report_id}/type")
+def set_report_type(
+    report_id: int,
+    payload: ReportLabelUpdate,
+    db: Annotated[Session, Depends(get_db)],
+):
+    """Mark a report as 'baseline' or 'followup' and optionally set a label."""
+    report = db.query(Report).filter(Report.id == report_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    if payload.report_type not in ("baseline", "followup"):
+        raise HTTPException(status_code=400, detail="report_type must be 'baseline' or 'followup'")
+    report.report_type = payload.report_type
+    if payload.label is not None:
+        report.label = payload.label
+    db.commit()
+    return {"id": report.id, "report_type": report.report_type, "label": report.label}
+
+
+# ── Comparison engine ─────────────────────────────────────────────────────────
+
+@app.get("/patient/{patient_id}/compare")
+def compare_patient_reports(
+    patient_id: int,
+    db: Annotated[Session, Depends(get_db)],
+    baseline_report_id: int | None = None,
+    followup_report_id: int | None = None,
+):
+    """
+    Compare two reports for a patient.
+
+    - If both IDs are provided, compare those specific reports.
+    - If only one ID is provided, use it as baseline and the latest other report as followup.
+    - If neither is provided, auto-select: oldest report = baseline, newest = followup.
+
+    Returns per-system delta, status ('improved'/'worse'/'same'), and human
+    interpretation, plus any recorded interventions between the two reports.
+
+    Example:
+        GET /patient/1/compare  →  "Detox improved by +16 after NAC"
+    """
+    patient = db.query(Patient).filter(Patient.id == patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    all_reports = (
+        db.query(Report)
+        .filter(Report.patient_id == patient_id)
+        .order_by(Report.created_at.asc())
+        .all()
+    )
+    if len(all_reports) < 2:
+        raise HTTPException(
+            status_code=400,
+            detail="At least 2 reports required to compare. Upload a baseline and a follow-up report.",
+        )
+
+    # Resolve which reports to compare
+    def _get_report(rid: int) -> Report:
+        r = db.query(Report).filter(Report.id == rid, Report.patient_id == patient_id).first()
+        if not r:
+            raise HTTPException(status_code=404, detail=f"Report {rid} not found for this patient")
+        return r
+
+    if baseline_report_id and followup_report_id:
+        baseline_r = _get_report(baseline_report_id)
+        followup_r = _get_report(followup_report_id)
+    elif baseline_report_id:
+        baseline_r = _get_report(baseline_report_id)
+        others = [r for r in all_reports if r.id != baseline_report_id]
+        followup_r = max(others, key=lambda r: r.created_at)
+    else:
+        # Auto: first = baseline, last = followup
+        baseline_r = all_reports[0]
+        followup_r = all_reports[-1]
+
+    # Fetch scores
+    def _scores(report: Report) -> dict[str, float]:
+        rows = db.query(Score).filter(Score.report_id == report.id).all()
+        return {row.system: row.score for row in rows}
+
+    baseline_scores = _scores(baseline_r)
+    followup_scores = _scores(followup_r)
+
+    # Fetch interventions recorded between the two reports
+    t_start = min(baseline_r.created_at, followup_r.created_at)
+    t_end = max(baseline_r.created_at, followup_r.created_at)
+    interventions = (
+        db.query(Intervention)
+        .filter(
+            Intervention.patient_id == patient_id,
+            Intervention.created_at >= t_start,
+            Intervention.created_at <= t_end,
+        )
+        .order_by(Intervention.created_at.asc())
+        .all()
+    )
+    inv_dicts = [
+        {
+            "id": i.id,
+            "system": i.system,
+            "interventions": i.interventions,
+            "adherence": i.adherence,
+            "notes": i.notes,
+            "created_at": i.created_at.isoformat(),
+        }
+        for i in interventions
+    ]
+
+    comparison_rows = _compare_reports(baseline_scores, followup_scores, inv_dicts)
+    summary = comparison_summary(comparison_rows)
+
+    return {
+        "patient_id": patient_id,
+        "patient_name": patient.name,
+        "baseline": {
+            "report_id": baseline_r.id,
+            "report_type": baseline_r.report_type,
+            "label": baseline_r.label,
+            "date": baseline_r.created_at.isoformat(),
+        },
+        "followup": {
+            "report_id": followup_r.id,
+            "report_type": followup_r.report_type,
+            "label": followup_r.label,
+            "date": followup_r.created_at.isoformat(),
+        },
+        "summary": summary,
+        "systems": comparison_rows,
+        "interventions": inv_dicts,
+    }
+

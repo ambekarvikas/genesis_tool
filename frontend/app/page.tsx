@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type PathwayRow = {
@@ -708,9 +709,26 @@ export default function Home() {
   return (
     <div style={{ padding: "20px 24px", fontFamily: "Arial, sans-serif", maxWidth: 860, margin: "0 auto" }}>
       <h1 style={{ marginBottom: 4, fontSize: 24 }}>Rhino Gene Intelligence</h1>
-      <p style={{ marginTop: 0, marginBottom: 18, color: "#64748b", fontSize: 14 }}>
+      <p style={{ marginTop: 0, marginBottom: 6, color: "#64748b", fontSize: 14 }}>
         Upload gene expression data, generate system scores, and track patient progress over time.
       </p>
+      <div style={{ marginBottom: 18 }}>
+        <Link
+          href="/patients"
+          style={{
+            display: "inline-block",
+            background: "#0f172a",
+            color: "#f1f5f9",
+            padding: "7px 14px",
+            borderRadius: 6,
+            fontSize: 13,
+            fontWeight: 600,
+            textDecoration: "none",
+          }}
+        >
+          👥 Manage Patients &amp; Compare Reports →
+        </Link>
+      </div>
 
       {/* Upload row */}
       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 6 }}>

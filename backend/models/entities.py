@@ -50,6 +50,8 @@ class Report(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     patient_id: Mapped[int] = mapped_column(ForeignKey("patients.id"), index=True)
+    report_type: Mapped[str] = mapped_column(String(16), default="followup", index=True)  # 'baseline' | 'followup'
+    label: Mapped[str | None] = mapped_column(String(128), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
 
 
@@ -93,6 +95,7 @@ class Intervention(Base):
     system: Mapped[str] = mapped_column(String(64), index=True)
     interventions: Mapped[dict] = mapped_column(JSON)
     adherence: Mapped[str] = mapped_column(String(20), default="unknown")
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
 
 
